@@ -1,4 +1,4 @@
-use gfa::gfa::Orientation;
+use gfa2::gfa2::Orientation;
 use std::cmp::Ordering;
 use std::ops::Add;
 

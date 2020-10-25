@@ -1,12 +1,19 @@
 use fnv::FnvHashMap;
 
-use gfa::{
-    gfa::{Link, Segment, GFA},
-    optfields::OptFields,
+use gfa2::{
+    gfa2::{
+        Edge, 
+        Segment, 
+        GroupO, 
+        GroupU, 
+        GFA2, 
+        orientation::Orientation,
+    },
+    tag::OptFields,
 };
 
 use crate::{
-    handle::{Edge, Handle, NodeId},
+    handle::{Edge as GraphEdge, Handle, NodeId},
     handlegraph::iter::*,
     handlegraph::HandleGraph,
     mutablehandlegraph::MutableHandleGraph,
@@ -45,28 +52,57 @@ impl HashGraph {
         &'a mut self,
         seg: &'b Segment<usize, T>,
     ) {
-        self.create_handle(&seg.sequence, seg.name as u64);
+        self.create_handle(&seg.sequence, seg.id as u64);
     }
 
-    fn add_gfa_link<T: OptFields>(&mut self, link: &Link<usize, T>) {
-        let left = Handle::new(link.from_segment as u64, link.from_orient);
-        let right = Handle::new(link.to_segment as u64, link.to_orient);
+    fn add_gfa_link<T: OptFields>(&mut self, link: &Edge<usize, T>) {
+        let left_len = link.sid1.to_string().len();
+        let right_len = link.sid2.to_string().len();
 
-        self.create_edge(Edge(left, right));
+        let left_orient = match &link.sid1.to_string()[left_len-1..] {
+            "+" => Orientation::Forward,
+            "-" => Orientation::Backward,
+            _ => panic!("Error! Edge did not include orientation"),
+        };
+        let right_orient = match &link.sid2.to_string()[right_len-1..] {
+            "+" => Orientation::Forward,
+            "-" => Orientation::Backward,
+            _ => panic!("Error! Edge did not include orientation"),
+        };
+
+        let left_id = &link.sid1.to_string()[..left_len-1];
+        let right_id = &link.sid2.to_string()[..right_len-1];
+        
+        let left = Handle::new(left_id.parse::<u64>().unwrap() as u64, left_orient);
+        let right = Handle::new(right_id.parse::<u64>().unwrap() as u64, right_orient);
+
+        self.create_edge(GraphEdge(left, right));
     }
 
-    fn add_gfa_path<T: OptFields>(&mut self, path: &gfa::gfa::Path<usize, T>) {
-        let path_id = self.create_path_handle(&path.path_name, false);
+    fn add_gfa_path_o<T: OptFields>(&mut self, path: &GroupO<usize, T>) {
+        let path_id = self.create_path_handle(&path.id, false);
         for (name, orient) in path.iter() {
             self.append_step(&path_id, Handle::new(name as u64, orient));
         }
     }
 
-    pub fn from_gfa<T: OptFields>(gfa: &GFA<usize, T>) -> HashGraph {
+    // the U-Group encodes a subgraph and all the segments id that are 
+    // presents in the var_field section do not have orientation!
+    // by default we should consider to have Forward (+) orientation? 
+    fn add_gfa_path_u<T: OptFields>(&mut self, path: &GroupU<usize, T>) {
+        let path_id = self.create_path_handle(&path.id, false);
+        for name in path.iter() {
+            self.append_step(&path_id, Handle::new(name as u64, Orientation::Forward));
+        }
+    }
+
+    pub fn from_gfa<T: OptFields>(gfa: &GFA2<usize, T>) -> HashGraph {
         let mut graph = Self::new();
         gfa.segments.iter().for_each(|s| graph.add_gfa_segment(s));
-        gfa.links.iter().for_each(|l| graph.add_gfa_link(l));
-        gfa.paths.iter().for_each(|p| graph.add_gfa_path(p));
+        gfa.edges.iter().for_each(|l| graph.add_gfa_link(l));
+        gfa.groups_o.iter().for_each(|o| graph.add_gfa_path_o(o));
+        // panicked at 'called `Option::unwrap()` on a `None` value', src\hashgraph.rs:455:67
+        //gfa.groups_u.iter().for_each(|u| graph.add_gfa_path_u(u));
         graph
     }
 

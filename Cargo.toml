@@ -1,19 +1,13 @@
 [package]
-name = "handlegraph"
-version = "0.5.0"
-authors = ["christian <christian@chfi.se>"]
+name = "handlegraph2"
+version = "0.1.0"
+authors = ["DrStiev <55959491+DrStiev@users.noreply.github.com>"]
 edition = "2018"
-license = "MIT"
-description = "Library for use in variation graphs"
-repository = "https://github.com/chfi/rs-handlegraph"
-readme = "readme.md"
-keywords = ["bioinformatics", "parser", "graph"]
-categories = ["science"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-gfa = "0.8"
+gfa2 = { git = "https://github.com/DrStiev/rs-gfa2" }
 bstr = "0.2"
 bio = "0.32"
 fnv = "1.0"
