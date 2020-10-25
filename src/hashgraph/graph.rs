@@ -101,8 +101,7 @@ impl HashGraph {
         gfa.segments.iter().for_each(|s| graph.add_gfa_segment(s));
         gfa.edges.iter().for_each(|l| graph.add_gfa_link(l));
         gfa.groups_o.iter().for_each(|o| graph.add_gfa_path_o(o));
-        // panicked at 'called `Option::unwrap()` on a `None` value', src\hashgraph.rs:455:67
-        //gfa.groups_u.iter().for_each(|u| graph.add_gfa_path_u(u));
+        gfa.groups_u.iter().for_each(|u| graph.add_gfa_path_u(u));
         graph
     }
 

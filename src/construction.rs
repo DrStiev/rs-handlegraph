@@ -11,8 +11,6 @@ use gfa2::{
     parser_gfa2::GFA2Result,
 };
 
-use bstr::BString;
-
 pub fn from_gfa<G, T>(gfa2: &GFA2<usize, T>) -> G
 where
     G: Default + MutableHandleGraph + PathHandleGraph,
@@ -53,6 +51,18 @@ where
         let path_id = graph.create_path_handle(name, false);
         for (seg, orient) in path.iter() {
             let handle = Handle::new(seg, orient);
+            graph.append_step(&path_id, handle);
+        }
+    }
+
+    // the U-Group encodes a subgraph and all the segments id that are 
+    // presents in the var_field section do not have orientation!
+    // by default we should consider to have Forward (+) orientation? 
+    for path in gfa2.groups_u.iter() {
+        let name = &path.id;
+        let path_id = graph.create_path_handle(name, false);
+        for seg in path.iter() {
+            let handle = Handle::new(seg, Orientation::Forward);
             graph.append_step(&path_id, handle);
         }
     }
@@ -98,6 +108,14 @@ where
                 let path_id = graph.create_path_handle(name, false);
                 for (seg, orient) in v.iter() {
                     let handle = Handle::new(seg, orient);
+                    graph.append_step(&path_id, handle);
+                }
+            }
+            Line::GroupU(v) => {
+                let name = &v.id;
+                let path_id = graph.create_path_handle(name, false);
+                for seg in v.iter() {
+                    let handle = Handle::new(seg, Orientation::Forward);
                     graph.append_step(&path_id, handle);
                 }
             }

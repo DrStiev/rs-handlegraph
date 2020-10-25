@@ -80,12 +80,11 @@ fn construct_from_gfa() {
 
     let parser = GFA2Parser::new();
     let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/data_usize.gfa").ok();
-
     //println!("{}", gfa.clone().unwrap());
 
     if let Some(gfa) = gfa {
         let graph = HashGraph::from_gfa(&gfa);
-        println!("{:#?}", graph);
+        //println!("{:#?}", graph);
 
         let mut node_ids: Vec<_> = graph.graph.keys().collect();
         node_ids.sort();
@@ -123,12 +122,11 @@ fn construct_gfa_with_multiple_path_type() {
 
     let parser = GFA2Parser::new();
     let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/sample2_usize.gfa").ok();
-
-    println!("{}", gfa.clone().unwrap());
+    //println!("{}", gfa.clone().unwrap());
 
     if let Some(gfa) = gfa {
         let graph = HashGraph::from_gfa(&gfa);
-        println!("{:#?}", graph);
+        //println!("{:#?}", graph);
 
         let mut node_ids: Vec<_> = graph.graph.keys().collect();
         node_ids.sort();
@@ -145,12 +143,12 @@ fn construct_gfa_with_multiple_path_type() {
                 node.right_edges.iter().map(|x| u64::from(x.id())).collect();
             println!("  Right edges: {:?}", rights);
         }
-
+    
         // add a loop to display the path
         graph.print_path(&"0".parse::<i64>().unwrap()); 
         graph.print_path(&"1".parse::<i64>().unwrap()); 
-        //graph.print_path(&"2".parse::<i64>().unwrap());
-        //graph.print_path(&"3".parse::<i64>().unwrap());
+        graph.print_path(&"2".parse::<i64>().unwrap());
+        graph.print_path(&"3".parse::<i64>().unwrap());
 
     } else {
         panic!("Couldn't parse test GFA file!");

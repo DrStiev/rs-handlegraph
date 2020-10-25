@@ -452,7 +452,9 @@ impl PathHandleGraph for HashGraph {
         let path: &mut Path = self.paths.get_mut(path_id).unwrap();
         path.nodes.push(to_append);
         let step = (*path_id, path.nodes.len() - 1);
-        let node: &mut Node = self.graph.get_mut(&to_append.id()).unwrap();
+        let node: &mut Node = self.graph.get_mut(&to_append.id()).unwrap_or_else(|| {
+            panic!("Tried getting a node that doesn't exist, ID: {:?}", to_append.id())
+        });
         node.occurrences.insert(step.0, step.1);
         PathStep::Step(*path_id, path.nodes.len() - 1)
     }
