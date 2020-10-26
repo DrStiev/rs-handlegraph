@@ -115,6 +115,48 @@ fn construct_from_gfa() {
 }
 
 #[test]
+#[should_panic]
+#[ignore]
+fn can_create_graph_from_gfa() {
+    use bstr::BStr;
+    use gfa2::gfa2::GFA2;
+    use gfa2::parser_gfa2::GFA2Parser;
+
+    // NodeId didn't exists
+    let parser = GFA2Parser::new();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/graph.gfa").ok();
+    //println!("{}", gfa.clone().unwrap());
+
+    if let Some(gfa) = gfa {
+        let graph = HashGraph::from_gfa(&gfa);
+        //println!("{:#?}", graph);
+
+        let mut node_ids: Vec<_> = graph.graph.keys().collect();
+        node_ids.sort();
+
+        println!("Nodes & edges");
+        for id in node_ids.iter() {
+            let node = graph.graph.get(id).unwrap();
+            let seq: &BStr = node.sequence.as_ref();
+            println!("  {:2}\t{}", u64::from(**id), seq);
+            let lefts: Vec<_> =
+                node.left_edges.iter().map(|x| u64::from(x.id())).collect();
+            println!("  Left edges:  {:?}", lefts);
+            let rights: Vec<_> =
+                node.right_edges.iter().map(|x| u64::from(x.id())).collect();
+            println!("  Right edges: {:?}", rights);
+        }
+
+        // add a loop to display the path
+        graph.print_path(&"0".parse::<i64>().unwrap()); // <- associated with the groups_o.id = 1
+        graph.print_path(&"1".parse::<i64>().unwrap()); // <- associated with the groups_o.id = 2
+
+    } else {
+        panic!("Couldn't parse test GFA file!");
+    }
+}
+
+#[test]
 fn construct_gfa_with_multiple_path_type() {
     use bstr::BStr;
     use gfa2::gfa2::GFA2;
