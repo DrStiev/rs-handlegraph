@@ -7,7 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-gfa2 = { git = "https://github.com/DrStiev/rs-gfa2" }
+gfa2 = { git = "https://github.com/DrStiev/rs-gfa2" } # for online tests
+# gfa2 = { path = "../rs-gfa2" }    # for local tests
 bstr = "0.2"
 bio = "0.32"
 fnv = "1.0"

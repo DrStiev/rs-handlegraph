@@ -28,13 +28,13 @@ where
         let left_len = link.sid1.to_string().len();
         let right_len = link.sid2.to_string().len();
         let left_orient = match &link.sid1.to_string()[left_len-1..] {
-            "+" => Orientation::Forward,
-            "-" => Orientation::Backward,
+            "0" => Orientation::Forward,
+            "1" => Orientation::Backward,
             _ => panic!("Error! Edge did not include orientation"),
         };
         let right_orient = match &link.sid2.to_string()[right_len-1..] {
-            "+" => Orientation::Forward,
-            "-" => Orientation::Backward,
+            "0" => Orientation::Forward,
+            "1" => Orientation::Backward,
             _ => panic!("Error! Edge did not include orientation"),
         };
         let left_id = &link.sid1.to_string()[..left_len-1];
@@ -87,13 +87,13 @@ where
                 let left_len = v.sid1.to_string().len();
                 let right_len = v.sid2.to_string().len();
                 let left_orient = match &v.sid1.to_string()[left_len-1..] {
-                    "+" => Orientation::Forward,
-                    "-" => Orientation::Backward,
+                    "0" => Orientation::Forward,
+                    "1" => Orientation::Backward,
                     _ => panic!("Error! Edge did not include orientation"),
                 };
                 let right_orient = match &v.sid2.to_string()[right_len-1..] {
-                    "+" => Orientation::Forward,
-                    "-" => Orientation::Backward,
+                    "0" => Orientation::Forward,
+                    "1" => Orientation::Backward,
                     _ => panic!("Error! Edge did not include orientation"),
                 };
                 let left_id = &v.sid1.to_string()[..left_len-1];

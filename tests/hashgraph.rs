@@ -67,7 +67,7 @@ fn read_test_gfa() -> HashGraph {
     use gfa2::parser_gfa2::GFA2Parser;
 
     let parser = GFA2Parser::new();
-    let gfa: GFA2<usize, ()> = parser.parse_file("./tests/gfa2_files/example_usize.gfa").unwrap();
+    let gfa: GFA2<usize, ()> = parser.parse_file("./tests/gfa2_files/example.gfa").unwrap();
 
     HashGraph::from_gfa(&gfa)
 }
@@ -79,7 +79,7 @@ fn construct_from_gfa() {
     use gfa2::parser_gfa2::GFA2Parser;
 
     let parser = GFA2Parser::new();
-    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/data_usize.gfa").ok();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/data.gfa").ok();
     //println!("{}", gfa.clone().unwrap());
 
     if let Some(gfa) = gfa {
@@ -121,7 +121,7 @@ fn construct_gfa_with_multiple_path_type() {
     use gfa2::parser_gfa2::GFA2Parser;
 
     let parser = GFA2Parser::new();
-    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/sample2_usize.gfa").ok();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/irl.gfa").ok();
     //println!("{}", gfa.clone().unwrap());
 
     if let Some(gfa) = gfa {
@@ -147,8 +147,6 @@ fn construct_gfa_with_multiple_path_type() {
         // add a loop to display the path
         graph.print_path(&"0".parse::<i64>().unwrap()); 
         graph.print_path(&"1".parse::<i64>().unwrap()); 
-        graph.print_path(&"2".parse::<i64>().unwrap());
-        graph.print_path(&"3".parse::<i64>().unwrap());
 
     } else {
         panic!("Couldn't parse test GFA file!");

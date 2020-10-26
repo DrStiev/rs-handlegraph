@@ -60,13 +60,13 @@ impl HashGraph {
         let right_len = link.sid2.to_string().len();
 
         let left_orient = match &link.sid1.to_string()[left_len-1..] {
-            "+" => Orientation::Forward,
-            "-" => Orientation::Backward,
+            "0" => Orientation::Forward,
+            "1" => Orientation::Backward,
             _ => panic!("Error! Edge did not include orientation"),
         };
         let right_orient = match &link.sid2.to_string()[right_len-1..] {
-            "+" => Orientation::Forward,
-            "-" => Orientation::Backward,
+            "0" => Orientation::Forward,
+            "1" => Orientation::Backward,
             _ => panic!("Error! Edge did not include orientation"),
         };
 
@@ -87,7 +87,7 @@ impl HashGraph {
     }
 
     // the U-Group encodes a subgraph and all the segments id that are 
-    // presents in the var_field section do not have orientation!
+    // presents in the var_field section do not have an orientation!
     // by default we should consider to have Forward (+) orientation? 
     fn add_gfa_path_u<T: OptFields>(&mut self, path: &GroupU<usize, T>) {
         let path_id = self.create_path_handle(&path.id, false);
@@ -96,6 +96,7 @@ impl HashGraph {
         }
     }
 
+    // TODO: add fragment and gap lines?
     pub fn from_gfa<T: OptFields>(gfa: &GFA2<usize, T>) -> HashGraph {
         let mut graph = Self::new();
         gfa.segments.iter().for_each(|s| graph.add_gfa_segment(s));
