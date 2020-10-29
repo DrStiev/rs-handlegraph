@@ -105,6 +105,15 @@ impl Handle {
         self.as_integer() & 1 != 0
     }
 
+    /// Return an handle object
+    /// # Example
+    /// ```ignore
+    /// use gfa2::Orientation::*;
+    /// use handlegraph2::Handle;
+    /// 
+    /// let left = Handle::new(id_left as u64, Orientation::Forward);
+    /// let right = Handle::new(id_right as u64, Orientation::Backward);
+    /// ```
     #[inline]
     pub fn new<T: Into<NodeId>>(id: T, orient: Orientation) -> Handle {
         let id: NodeId = id.into();
@@ -201,7 +210,7 @@ mod tests {
     }
 
     // Handle::pack should panic when the provided NodeId is invalid
-    // (i.e. uses the 64th bit
+    // (i.e. uses the 64th bit)
     #[test]
     #[should_panic]
     fn handle_pack_panic() {

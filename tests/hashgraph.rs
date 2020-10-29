@@ -79,38 +79,93 @@ fn construct_from_gfa() {
     use gfa2::parser_gfa2::GFA2Parser;
 
     let parser = GFA2Parser::new();
-    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/data.gfa").ok();
-    //println!("{}", gfa.clone().unwrap());
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
 
     if let Some(gfa) = gfa {
         let graph = HashGraph::from_gfa(&gfa);
-        //println!("{:#?}", graph);
-
+        println!("{:#?}", graph);
         let mut node_ids: Vec<_> = graph.graph.keys().collect();
         node_ids.sort();
-        
-        assert_eq!(9, graph.node_count());
-        assert_eq!(12, graph.edge_count());
 
         println!("Nodes & edges");
         for id in node_ids.iter() {
             let node = graph.graph.get(id).unwrap();
+            
             let seq: &BStr = node.sequence.as_ref();
-            println!("  {:2}\t{}", u64::from(**id), seq);
+            println!("  id: {:2} sequence: {}", u64::from(**id), seq);
             let lefts: Vec<_> =
                 node.left_edges.iter().map(|x| u64::from(x.id())).collect();
-            println!("  Left edges:  {:?}", lefts);
+            println!("  Left edges id:  {:?}", lefts);
             let rights: Vec<_> =
                 node.right_edges.iter().map(|x| u64::from(x.id())).collect();
-            println!("  Right edges: {:?}", rights);
+            println!("  Right edges id: {:?}", rights);
         }
-
-        // println!("{:#?}", graph.get_path(&"0".parse::<i64>().unwrap()));
-        // add a loop to display the path
-        graph.print_path(&"0".parse::<i64>().unwrap()); // <- associated with the groups_o.id = 1
-        graph.print_path(&"1".parse::<i64>().unwrap()); // <- associated with the groups_o.id = 2
     } else {
         panic!("Couldn't parse test GFA file!");
+    }
+}
+
+#[test]
+fn handlegraph_to_gfa() {
+    use bstr::BString;
+    use gfa2::gfa2::GFA2;
+
+    let mut graph = path_graph();
+
+    // Add a path 3 -> 5
+    let p1 = graph.create_path_handle(b"path-1", false);
+    graph.append_step(&p1, H3);
+    graph.append_step(&p1, H5);
+
+    // Add another path 1 -> 3 -> 4 -> 6
+    let p2 = graph.create_path_handle(b"path-2", false);
+    graph.append_step(&p2, H1);
+    let _p2_3 = graph.append_step(&p2, H3);
+    let _p2_4 = graph.append_step(&p2, H4);
+    graph.append_step(&p2, H6);
+
+    let _test_node = |graph: &HashGraph,
+                     nid: u64,
+                     o1: Option<&usize>,
+                     o2: Option<&usize>| {
+        let n = graph.get_node(&NodeId::from(nid)).unwrap();
+        assert_eq!(o1, n.occurrences.get(&p1));
+        assert_eq!(o2, n.occurrences.get(&p2));
+    };
+
+    let gfa2: GFA2<BString, ()> = HashGraph::to_gfa(graph);
+    println!("{}", gfa2); 
+}
+
+#[test]
+fn can_reverse_complement() {
+    use bstr::BStr;
+    
+    let mut graph = HashGraph::new();
+    let h1 = graph.create_handle(b"ACCTT", 11);
+    let h2 = graph.create_handle(b"TCAAGG", 12);
+    let h3 = graph.create_handle(b"CTTGATT", 13);
+
+    // use .flip() to apply reverse complement to the node
+    graph.apply_orientation(h2.flip());
+
+    graph.create_edge(Edge(h1, h2));
+    graph.create_edge(Edge(h2, h3));
+    graph.create_edge(Edge(h1, h3));
+
+    let mut node_ids: Vec<_> = graph.graph.keys().collect();
+    node_ids.sort();
+    println!("Nodes & edges");
+    for id in node_ids.iter() {
+        let node = graph.graph.get(id).unwrap();
+        let seq: &BStr = node.sequence.as_ref();
+        println!("  id: {:2} sequence: {}", u64::from(**id), seq);
+        let lefts: Vec<_> =
+            node.left_edges.iter().map(|x| u64::from(x.id())).collect();
+        println!("  Left edges id:  {:?}", lefts);
+        let rights: Vec<_> =
+            node.right_edges.iter().map(|x| u64::from(x.id())).collect();
+        println!("  Right edges id: {:?}", rights);
     }
 }
 
@@ -129,12 +184,12 @@ fn degree_is_correct() {
 
 fn path_graph() -> HashGraph {
     let mut graph = HashGraph::new();
-    let h1 = graph.create_handle(b"1", 1);
-    let h2 = graph.create_handle(b"2", 2);
-    let h3 = graph.create_handle(b"3", 3);
-    let h4 = graph.create_handle(b"4", 4);
-    let h5 = graph.create_handle(b"5", 5);
-    let h6 = graph.create_handle(b"6", 6);
+    let h1 = graph.create_handle(b"A", 1);
+    let h2 = graph.create_handle(b"AA", 2);
+    let h3 = graph.create_handle(b"AAA", 3);
+    let h4 = graph.create_handle(b"AAAA", 4);
+    let h5 = graph.create_handle(b"AAAAA", 5);
+    let h6 = graph.create_handle(b"AAAAAA", 6);
 
     /*
     edges
@@ -231,13 +286,11 @@ fn append_prepend_path() {
     let mut graph = path_graph();
 
     // Add a path 3 -> 5
-
     let p1 = graph.create_path_handle(b"path-1", false);
     graph.append_step(&p1, H3);
     graph.append_step(&p1, H5);
 
     // Add another path 1 -> 3 -> 4 -> 6
-
     let p2 = graph.create_path_handle(b"path-2", false);
     graph.append_step(&p2, H1);
     let p2_3 = graph.append_step(&p2, H3);

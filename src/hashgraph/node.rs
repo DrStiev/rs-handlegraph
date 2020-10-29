@@ -5,6 +5,16 @@ use crate::handle::Handle;
 
 use super::PathId;
 
+/// New type
+/// # Example
+/// ```ignore
+/// pub struct Node {
+///     pub sequence: BString,
+///     pub left_edges: Vec<Handle>,
+///     pub right_edges: Vec<Handle>,
+///     pub occurrences: FnvHashMap<PathId, usize>,
+/// }
+/// ```
 #[derive(Debug, Clone)]
 pub struct Node {
     pub sequence: BString,
