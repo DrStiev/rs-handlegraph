@@ -89,66 +89,6 @@ impl HashGraph {
         let left = Handle::new(left_id.parse::<u64>().unwrap() as u64, left_orient);
         let right = Handle::new(right_id.parse::<u64>().unwrap() as u64, right_orient);
         self.create_edge(GraphEdge(left, right));
-        /*
-        let id_left = self.get_node(&left.id()).unwrap().clone();
-        let id_right = self.get_node(&right.id()).unwrap().clone();
-
-        println!("left id: {}\nright id: {}", id_left.sequence, id_right.sequence);
-
-        let mut node_ids: Vec<_> = self.graph.keys().collect();
-        node_ids.sort();
-        println!("Nodes & edges");
-        for id in node_ids.iter() {
-            let node = self.graph.get(id).unwrap();
-            let seq: &BStr = node.sequence.as_ref();
-            println!("  {:2}\t{}", u64::from(**id), seq);
-            let lefts: Vec<_> =
-                node.left_edges.iter().map(|x| u64::from(x.id())).collect();
-            println!("  Left edges:  {:?}", lefts);
-            let rights: Vec<_> =
-                node.right_edges.iter().map(|x| u64::from(x.id())).collect();
-            println!("  Right edges: {:?}", rights);
-        }
-        print!("\n");
-
-        // the reverse and complement operation it's performed too many times
-        // seems that the graph lose trace about the first edge after the reverse complement
-        // operation
-        let left_reversed: Handle = if left.is_reverse() {
-            let id = self.get_node(&left.id()).unwrap().clone();
-            let new_left = self.create_handle(&id.sequence, left.id()).clone();
-            self.apply_orientation(new_left.flip()).clone()
-        } else { left }; 
-        let right_reversed: Handle = if right.is_reverse() {
-            let id = self.get_node(&right.id()).unwrap().clone();
-            let new_right = self.create_handle(&id.sequence, right.id()).clone();
-            self.apply_orientation(new_right.flip()).clone()
-        } else { right };
-
-        //let right_reversed: Handle = right;
-        //let left_reversed: Handle = left;
-
-        //println!("left reversed: {}", self.get_node(&left_reversed.id()).unwrap().clone().sequence);
-        //println!("right reversed: {}", self.get_node(&right_reversed.id()).unwrap().clone().sequence);
-
-        let mut node_ids: Vec<_> = self.graph.keys().collect();
-        node_ids.sort();
-        println!("Nodes & edges");
-        for id in node_ids.iter() {
-            let node = self.graph.get(id).unwrap();
-            let seq: &BStr = node.sequence.as_ref();
-            println!("  {:2}\t{}", u64::from(**id), seq);
-            let lefts: Vec<_> =
-                node.left_edges.iter().map(|x| u64::from(x.id())).collect();
-            println!("  Left edges:  {:?}", lefts);
-            let rights: Vec<_> =
-                node.right_edges.iter().map(|x| u64::from(x.id())).collect();
-            println!("  Right edges: {:?}", rights);
-        }
-        print!("\n");
-
-        self.create_edge(GraphEdge(left_reversed, right_reversed));
-        */
     }
 
     fn add_gfa_path_o<T: OptFields>(&mut self, path: &GroupO<usize, T>) {
@@ -168,7 +108,6 @@ impl HashGraph {
         }
     }
 
-    // TODO: add fragment and gap lines?
     /// Function that takes a GFA2 object as input and return a HashGraph object
     /// # Example
     /// ```ignore
@@ -247,195 +186,6 @@ impl HashGraph {
         graph
     }
 
-    /// Function that takes a HashGraph object as input and return a GFA2 object
-    /// This function is still ```Work In Progress``` so it's not perfect.\
-    /// Sometimes can leads to unexpected bugs.
-    /// # Example
-    /// ```ignore
-    /// use bstr::BString;
-    /// use gfa2::gfa2::GFA2;
-    /// 
-    /// let mut graph = path_graph();
-    /// 
-    /// // Add a path 3 -> 5
-    /// let p1 = graph.create_path_handle(b"path-1", false);
-    /// graph.append_step(&p1, H3);
-    /// graph.append_step(&p1, H5);
-    /// // Add another path 1 -> 3 -> 4 -> 6
-    /// let p2 = graph.create_path_handle(b"path-2", false);
-    /// graph.append_step(&p2, H1);
-    /// let _p2_3 = graph.append_step(&p2, H3);
-    /// let _p2_4 = graph.append_step(&p2, H4);
-    /// graph.append_step(&p2, H6);
-    /// let _test_node = |graph: &HashGraph,
-    ///                  nid: u64,
-    ///                  o1: Option<&usize>,
-    ///                  o2: Option<&usize>| {
-    ///     let n = graph.get_node(&NodeId::from(nid)).unwrap();
-    ///     assert_eq!(o1, n.occurrences.get(&p1));
-    ///     assert_eq!(o2, n.occurrences.get(&p2));
-    /// };
-    /// 
-    /// let gfa2: GFA2<BString, ()> = HashGraph::to_gfa(graph);
-    /// println!("{}", gfa2);
-    ///  
-    /// /*
-    /// H       VN:Z:2.0
-    /// S       1       42      A
-    /// S       2       42      AA
-    /// S       3       42      AAA
-    /// S       4       42      AAAA
-    /// S       5       42      AAAAA
-    /// S       6       42      AAAAAA
-    /// E       *       1+      2-      42      42$     42      42$     *
-    /// E       *       1+      3-      42      42$     42      42$     *
-    /// E       *       2+      1+      42      42$     42      42$     *
-    /// E       *       2+      5-      42      42$     42      42$     *
-    /// E       *       3+      1+      42      42$     42      42$     *
-    /// E       *       3+      4-      42      42$     42      42$     *
-    /// E       *       4+      3+      42      42$     42      42$     *
-    /// E       *       4+      6-      42      42$     42      42$     *
-    /// E       *       5+      2+      42      42$     42      42$     *
-    /// E       *       5+      6-      42      42$     42      42$     *
-    /// E       *       6+      5+      42      42$     42      42$     *
-    /// E       *       6+      4+      42      42$     42      42$     *
-    /// O       path-1   3+ 5+ 
-    /// O       path-2   1+ 3+ 4+ 6+
-    /// */
-    /// ```
-    pub fn to_gfa(graph: HashGraph) -> GFA2<BString, ()> {
-        use gfa2::gfa2::*;
-        
-        // I think it can be more efficient but for now it's good 
-        let mut file: GFA2<BString, ()> = GFA2::new();
-        // default header
-        file.headers = vec![
-            Header::new(Some("VN:Z:2.0".into()))
-        ];
-        // TODO: for now this section it's not interesting so 
-        // it can be ignored 
-        file.fragments = vec![];
-        file.gaps = vec![];
-        file.segments = vec![];
-
-        // TODO: the orientation is only retrieved partially 
-        file.edges = vec![];
-        file.groups_o = vec![];
-        file.groups_u = vec![];
-
-        let mut node_ids: Vec<_> = graph.graph.keys().collect();
-        node_ids.sort(); 
-        
-        for nodeid in node_ids.iter() {
-            let node = graph.graph.get(nodeid).unwrap();
-            let seq_id = u64::from(**nodeid).to_string();
-            
-            // obtain all the segments part of the graph
-            file.segments.push(
-                Segment {
-                    id: seq_id.clone().into(), 
-                    // placeholder value
-                    // the len value must be present but it's value it's not 
-                    // as important as it's presence
-                    len: "42".into(), 
-                    sequence: node.sequence.clone(),
-                    tag: (),
-                });
-
-            // obtain all the id associated to the left and right edges
-            let lefts: Vec<_> = node.left_edges.iter().map(|x| u64::from(x.id())).collect();
-            let rights: Vec<_> = node.right_edges.iter().map(|x| u64::from(x.id())).collect();
-           // obtain all the orientation associated to the left and right edge ids
-            let lefts_orient: Vec<_> = node.left_edges.iter().map(|x| bool::from(x.is_reverse())).collect();
-            let right_orient: Vec<_> = node.right_edges.iter().map(|x| bool::from(x.is_reverse())).collect();
-
-            let mut i: usize = 0;
-            // iter over the left ids of the edge array
-            for id in lefts { 
-                let orient: String = if lefts_orient[i] {
-                    "+".to_string()
-                } else {
-                    "-".to_string()
-                };
-                file.edges.push(
-                    Edge {
-                        // placeholder id
-                        id: "*".into(),
-                        // starting node
-                        // placeholder orientation
-                        sid1: format!("{}{}", seq_id.clone(), "+").into(), 
-                        // placeholder orientation
-                        // this would works fine if only the reverse and complement 
-                        // in the gfa_add_link() function would work properly
-                        sid2: format!("{}{}", id.to_string(), orient).into(), 
-                        beg1:"42".into(), // placeholder value
-                        end1:"42$".into(), // placeholder value
-                        beg2:"42".into(), // placeholder value
-                        end2:"42$".into(), // placeholder value
-                        alignment: "*".into(),
-                        tag: (),
-                    }
-                );
-                i += 1;
-            }
-
-            i = 0;
-            // iter over the right ids of the edge array
-            for id in rights {
-                let orient: String = if right_orient[i] {
-                    "+".to_string()
-                } else {
-                    "-".to_string()
-                };
-                file.edges.push(
-                    // push first edge left id then edge right id
-                    Edge {
-                        // placeholder id
-                        id: "*".into(),
-                       // starting node
-                        // placeholder orientation
-                        sid1: format!("{}{}", seq_id.clone(), "+").into(),
-                        // placeholder orientation
-                        // this would works fine if only the reverse and complement 
-                        // in the gfa_add_link() function would work properly
-                        sid2: format!("{}{}", id.to_string(), orient).into(), 
-                        beg1:"42".into(), // placeholder value
-                        end1:"42$".into(), // placeholder value
-                        beg2:"42".into(), // placeholder value
-                        end2:"42$".into(), // placeholder value
-                        alignment: "*".into(),
-                        tag: (),
-                    }
-                );
-                i+= 1;
-            }
-        }
-
-        let mut x :i64 = 0;
-        // obtain all the information for the O-Group
-        // TODO: this could incidentally cast the U-Group information as an O-Group 
-        while !graph.get_path(&x).is_none() {
-            let mut id_path: String = "".to_string();
-
-            for nodeid in graph.get_path(&x).unwrap().nodes.iter() {
-                let seq_id = u64::from(*nodeid).to_string();
-
-                id_path = format!("{}{}{}{}", id_path, " ", seq_id, "+");
-                
-            }
-            file.groups_o.push(
-                GroupO::new(
-                    graph.get_path(&x).unwrap().name.to_string().into(),
-                    // get all the id and orientation for the path reference
-                    id_path.clone().into(),
-                    (),
-                )
-            );
-            x += 1;
-        }
-        file
-    }
-
     /// Function that print all the sequence associated to the segment ids 
     /// found in a certain path
     /// # Examples
@@ -453,7 +203,7 @@ impl HashGraph {
     /// graph.append_step(&p1, h2);
     /// graph.append_step(&p1, h3);
     /// 
-    ///  let mut x :i64 = 0;
+    /// let mut x :i64 = 0;
     /// while !graph.get_path(&x).is_none() {
     ///     // ACCTT -> TCAAGG -> CTTGATT
     ///     graph.print_path(&x);

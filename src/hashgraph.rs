@@ -19,6 +19,16 @@ pub use self::graph::HashGraph;
 pub use self::node::Node;
 pub use self::path::{Path, PathId, PathStep};
 
+/*
+impl HandleSequences for HashGraph {}
+impl HandleNeighbors for HashGraph {}
+impl AllEdges for HashGraph {}
+impl AllHandles for HashGraph {}
+
+impl Copy for HashGraph {}
+impl HandleGraphRef for HashGraph {}
+*/
+
 impl HandleGraph for HashGraph {
     fn has_node(&self, node_id: NodeId) -> bool {
         self.graph.contains_key(&node_id)
@@ -70,42 +80,6 @@ impl HandleGraph for HashGraph {
     fn has_edge(&self, left: Handle, right: Handle) -> bool {
         self.neighbors(left, Direction::Right).any(|h| h == right)
     }
-
-    /*
-    fn edges_iter<'a>(&'a self) -> Box<dyn Iterator<Item = Edge> + 'a> {
-        use Direction::*;
-
-        let handles = self.handles_iter();
-
-        let neighbors = move |handle: Handle| {
-            let right_neighbors = self
-                .handle_edges_iter(handle, Right)
-                .filter_map(move |next| {
-                    if handle.id() <= next.id() {
-                        Some(Edge::edge_handle(handle, next))
-                    } else {
-                        None
-                    }
-                });
-
-            let left_neighbors = self
-                .handle_edges_iter(handle, Left)
-                .filter_map(move |prev| {
-                    if (handle.id() < prev.id())
-                        || (handle.id() == prev.id() && prev.is_reverse())
-                    {
-                        Some(Edge::edge_handle(prev, handle))
-                    } else {
-                        None
-                    }
-                });
-
-            right_neighbors.chain(left_neighbors)
-        };
-
-        Box::new(handles.map(neighbors).flatten())
-    }
-    */
 }
 
 impl MutableHandleGraph for HashGraph {

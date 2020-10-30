@@ -1,4 +1,5 @@
 use handlegraph2::{
+    conversion::*,
     handle::{Direction, Edge, Handle, NodeId},
     handlegraph::*,
     hashgraph::{HashGraph, PathStep},
@@ -108,33 +109,19 @@ fn construct_from_gfa() {
 #[test]
 fn handlegraph_to_gfa() {
     use bstr::BString;
-    use gfa2::gfa2::GFA2;
-
-    let mut graph = path_graph();
-
-    // Add a path 3 -> 5
-    let p1 = graph.create_path_handle(b"path-1", false);
-    graph.append_step(&p1, H3);
-    graph.append_step(&p1, H5);
-
-    // Add another path 1 -> 3 -> 4 -> 6
-    let p2 = graph.create_path_handle(b"path-2", false);
-    graph.append_step(&p2, H1);
-    let _p2_3 = graph.append_step(&p2, H3);
-    let _p2_4 = graph.append_step(&p2, H4);
-    graph.append_step(&p2, H6);
-
-    let _test_node = |graph: &HashGraph,
-                     nid: u64,
-                     o1: Option<&usize>,
-                     o2: Option<&usize>| {
-        let n = graph.get_node(&NodeId::from(nid)).unwrap();
-        assert_eq!(o1, n.occurrences.get(&p1));
-        assert_eq!(o2, n.occurrences.get(&p2));
+    use gfa2::{
+        gfa2::GFA2,
+        parser_gfa2::GFA2Parser,
     };
 
-    let gfa2: GFA2<BString, ()> = HashGraph::to_gfa(graph);
-    println!("{}", gfa2); 
+    let parser = GFA2Parser::new();
+    let gfa_in: GFA2<usize, ()> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").unwrap();
+    
+    let graph = handlegraph2::conversion::from_gfa(&gfa_in);
+    let gfa_out: GFA2<BString, ()> = handlegraph2::conversion::to_gfa(&graph);
+
+    println!("{}", gfa_out);
+    println!("{}", gfa_in); 
 }
 
 #[test]
@@ -217,6 +204,12 @@ fn graph_neighbors_iter() {
     // let mut iter = graph.handle_edges_iter(H1, Direction::Right);
     let mut iter = graph.neighbors(H1, Direction::Right);
 
+    /*
+    for i in iter {
+        println!("{:?}", i);
+    }
+    */
+    
     assert_eq!(Some(H2), iter.next());
     assert_eq!(Some(H3), iter.next());
     assert_eq!(Some(H4), iter.next());
