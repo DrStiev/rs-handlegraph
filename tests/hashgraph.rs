@@ -84,7 +84,6 @@ fn construct_from_gfa() {
 
     if let Some(gfa) = gfa {
         let graph = HashGraph::from_gfa(&gfa);
-        println!("{:#?}", graph);
         let mut node_ids: Vec<_> = graph.graph.keys().collect();
         node_ids.sort();
 
