@@ -34,7 +34,7 @@ use super::{Node, Path, PathId};
 ///     pub paths: FnvHashMap<i64, Path>,
 /// }
 /// ```
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct HashGraph {
     pub max_id: NodeId,
     pub min_id: NodeId,

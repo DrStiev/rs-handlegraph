@@ -42,7 +42,7 @@ impl PathStep {
 ///     pub nodes: Vec<Handle>,
 /// }
 /// ```
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Path {
     pub path_id: PathId,
     pub name: BString,
