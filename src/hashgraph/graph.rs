@@ -58,6 +58,9 @@ impl HashGraph {
         Default::default()
     }
 
+    // TODO: add remove_segment, remove_link and remove_path
+    // TODO: add modify_segment, modify_link and modify_path
+
     fn add_gfa_segment<'a, 'b, T: OptFields>(
         &'a mut self,
         seg: &'b Segment<usize, T>,

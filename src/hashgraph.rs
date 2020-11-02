@@ -119,6 +119,46 @@ impl<'a> HandleGraphRef for &'a HashGraph {
     }
 }
 
+// TODO: add impl SubtractiveHandleGraph for HashGraph {}
+impl SubtractiveHandleGraph for HashGraph {
+    fn remove_handle(&mut self, handle: Handle) -> bool {
+        /*
+            check if the handle -> nodeid exists
+            if not return false with an error
+            else remove it and return true
+            if it cannot ben removed, panic!
+            
+            to remove an handle: 
+            use item.remove(item)
+            use as reference rewrite_segment
+         */
+
+        true
+    }
+
+    fn remove_edge(&mut self, edge: Edge) -> bool {
+        /*
+            check if the edge exists
+            if not return false with an error
+            else remove it and return true
+            if it cannot ben removed, panic!
+            
+            to remove an edge:
+            use item.remove(item)
+            use as reference rewrite_segment
+         */
+
+        true
+    }
+
+    fn clear_graph(&mut self) {
+        /*
+            delete all the information in the graph
+            use graph.remove(&graph)
+        */
+    }
+}
+
 impl AdditiveHandleGraph for HashGraph {
     fn append_handle(&mut self, sequence: &[u8]) -> Handle {
         self.create_handle(sequence, self.max_id + 1)

@@ -1,6 +1,6 @@
 use crate::{
     handle::{Edge, Handle, NodeId},
-    handlegraph::HandleGraphRef,
+    hashgraph::HashGraph,
     mutablehandlegraph::*,
     pathgraph::PathHandleGraph,
 };
@@ -247,10 +247,8 @@ where
 /// O	14	11+ 12- 13+
 /// */
 /// ```
-pub fn to_gfa<G>(graph: &G) -> GFA2<BString, ()>
-where
-    G: HandleGraphRef + PathHandleGraph,
-{
+pub fn to_gfa(graph: &HashGraph) -> GFA2<BString, ()> {
+    use crate::handlegraph::*;
     // I think it can be more efficient but for now it's good 
     let mut file = GFA2::new();
 

@@ -107,7 +107,6 @@ fn construct_from_gfa() {
 
 #[test]
 fn handlegraph_to_gfa() {
-    /*
     use bstr::BString;
     use gfa2::{
         gfa2::GFA2,
@@ -122,7 +121,6 @@ fn handlegraph_to_gfa() {
 
     println!("{}", gfa_out);
     println!("{}", gfa_in); 
-    */
 }
 
 #[test]
