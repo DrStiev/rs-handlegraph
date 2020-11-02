@@ -1,8 +1,7 @@
 use crate::{
     handle::{Edge, Handle, NodeId},
-    handlegraph::{HandleGraph, HandleGraphRef},
-    hashgraph::HashGraph,
-    mutablehandlegraph::MutableHandleGraph,
+    handlegraph::HandleGraphRef,
+    mutablehandlegraph::*,
     pathgraph::PathHandleGraph,
 };
 
@@ -92,7 +91,7 @@ use bstr::BString;
 /// ```
 pub fn from_gfa<G, T>(gfa2: &GFA2<usize, T>) -> G
 where
-    G: Default + MutableHandleGraph + PathHandleGraph,
+    G: Default + AdditiveHandleGraph + PathHandleGraph,
     T: OptFields,
 {
     let mut graph: G = Default::default();
@@ -151,7 +150,7 @@ where
 
 pub fn fill_gfa_lines<G, I, T>(graph: &mut G, gfa_lines: I) -> GFA2Result<()>
 where
-    G: MutableHandleGraph + PathHandleGraph,
+    G: AdditiveHandleGraph + PathHandleGraph,
     I: Iterator<Item = GFA2Result<Line<usize, T>>>,
     T: OptFields,
 {
@@ -248,13 +247,10 @@ where
 /// O	14	11+ 12- 13+
 /// */
 /// ```
-pub fn to_gfa(graph: &HashGraph) -> GFA2<BString, ()> {
-    use crate::handlegraph::iter::{
-        AllHandles,
-        HandleSequences,
-        AllEdges,
-    };
-
+pub fn to_gfa<G>(graph: &G) -> GFA2<BString, ()>
+where
+    G: HandleGraphRef + PathHandleGraph,
+{
     // I think it can be more efficient but for now it's good 
     let mut file = GFA2::new();
 

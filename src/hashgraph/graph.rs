@@ -1,5 +1,4 @@
 use fnv::FnvHashMap;
-use bstr::BString;
 
 use gfa2::{
     gfa2::{
@@ -15,9 +14,8 @@ use gfa2::{
 
 use crate::{
     handle::{Edge as GraphEdge, Handle, NodeId},
-    handlegraph::iter::*,
-    handlegraph::HandleGraph,
-    mutablehandlegraph::MutableHandleGraph,
+    handlegraph::*,
+    mutablehandlegraph::*,
     pathgraph::PathHandleGraph,
 };
 
