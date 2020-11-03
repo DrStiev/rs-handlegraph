@@ -3,13 +3,13 @@ use fnv::FnvHashMap;
 
 use crate::handle::{Handle, NodeId};
 
-use crate::pathhandlegraph::{PathRef, PathRefMut};
+// use crate::pathhandlegraph::{PathBase, PathRef, PathRefMut};
 
 use super::Node;
 
 pub type PathId = i64;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PathStep {
     Front(i64),
     End(i64),
@@ -34,7 +34,7 @@ impl PathStep {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub struct Path {
     pub path_id: PathId,
     pub name: BString,
@@ -66,23 +66,22 @@ impl<'a> Iterator for PathStepIter<'a> {
     }
 }
 
+/*
 use crate::pathhandlegraph::PathStep as PStep;
-
+impl PathBase for Path {
+    type Step = PStep;
+}
 impl<'a> PathRef for &'a Path {
     type Steps = PathStepIter<'a>;
-
     fn steps(self) -> Self::Steps {
         PathStepIter::new(&self.nodes)
     }
-
     fn len(self) -> usize {
         self.nodes.len()
     }
-
     fn circular(self) -> bool {
         self.is_circular
     }
-
     fn handle_at(self, step: PStep) -> Option<Handle> {
         if let PStep::Step(ix) = step {
             self.nodes.get(ix).copied()
@@ -90,31 +89,27 @@ impl<'a> PathRef for &'a Path {
             None
         }
     }
-
     fn contains(self, handle: Handle) -> bool {
         self.nodes.contains(&handle)
     }
-
     // fn next_step(self, step: PStep) -> Option<PStep> {
 }
-
 impl<'a> PathRefMut for &'a mut Path {
     fn append(self, handle: Handle) -> PStep {
         let new_step = PStep::Step(self.nodes.len());
         self.nodes.push(handle);
         new_step
     }
-
     fn prepend(self, handle: Handle) -> PStep {
         let new_step = PStep::Step(0);
         self.nodes.insert(0, handle);
         new_step
     }
-
     fn set_circularity(self, circular: bool) {
         self.is_circular = circular;
     }
 }
+*/
 
 impl Path {
     pub fn new<T: Into<BString>>(

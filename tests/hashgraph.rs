@@ -80,7 +80,7 @@ fn construct_from_gfa() {
     use gfa2::parser_gfa2::GFA2Parser;
 
     let parser = GFA2Parser::new();
-    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/data.gfa").ok();
 
     if let Some(gfa) = gfa {
         let graph = HashGraph::from_gfa(&gfa);

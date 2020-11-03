@@ -260,13 +260,11 @@ pub fn to_gfa(graph: &HashGraph) -> GFA2<BString, ()> {
     for handle in graph.all_handles() {
         let seq_id = BString::from(handle.id().to_string());
         let sequence: BString = graph.sequence_iter(handle.forward()).collect();
+        let len: BString = BString::from(sequence.len().to_string());
 
         let segment = Segment {
             id: seq_id, 
-            // placeholder value
-            // the len value must be present but it's value it's not 
-            // as important as it's presence
-            len: "0".into(), 
+            len: len, 
             sequence: sequence,
             tag: (),
         };
