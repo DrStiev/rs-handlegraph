@@ -9,6 +9,7 @@ use gfa2::{
         GFA2, 
         orientation::Orientation,
     },
+    gfa1::{Link, Segment as Segment1, GFA},
     tag::OptFields,
 };
 
@@ -61,7 +62,7 @@ impl HashGraph {
     // TODO: add remove_segment, remove_link and remove_path
     // TODO: add modify_segment, modify_link and modify_path
 
-    fn add_gfa_segment<'a, 'b, T: OptFields>(
+    fn add_gfa2_segment<'a, 'b, T: OptFields>(
         &'a mut self,
         seg: &'b Segment<usize, T>,
     ) {
@@ -69,7 +70,7 @@ impl HashGraph {
     }
 
     // TODO: handle reverse and complement 
-    fn add_gfa_link<T: OptFields>(&mut self, link: &Edge<usize, T>) {
+    fn add_gfa_edge<T: OptFields>(&mut self, link: &Edge<usize, T>) {
         let left_len = link.sid1.to_string().len();
         let right_len = link.sid2.to_string().len();
 
@@ -120,7 +121,7 @@ impl HashGraph {
     /// let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
     ///
     /// if let Some(gfa) = gfa {
-    ///     let graph = HashGraph::from_gfa(&gfa);
+    ///     let graph = HashGraph::from_gfa2(&gfa);
     ///     println!("{:#?}", graph);
     /// } else {
     ///     panic!("Couldn't parse test GFA file!");
@@ -178,12 +179,106 @@ impl HashGraph {
     /// }
     /// */
     /// ```
-    pub fn from_gfa<T: OptFields>(gfa: &GFA2<usize, T>) -> HashGraph {
+    pub fn from_gfa2<T: OptFields>(gfa: &GFA2<usize, T>) -> HashGraph {
         let mut graph = Self::new();
-        gfa.segments.iter().for_each(|s| graph.add_gfa_segment(s));
-        gfa.edges.iter().for_each(|l| graph.add_gfa_link(l));
+        gfa.segments.iter().for_each(|s| graph.add_gfa2_segment(s));
+        gfa.edges.iter().for_each(|l| graph.add_gfa_edge(l));
         gfa.groups_o.iter().for_each(|o| graph.add_gfa_path_o(o));
         gfa.groups_u.iter().for_each(|u| graph.add_gfa_path_u(u));
+        graph
+    }
+
+    fn add_gfa_segment<'a, 'b, T: OptFields>(
+        &'a mut self,
+        seg: &'b Segment1<usize, T>,
+    ) {
+        self.create_handle(&seg.sequence, seg.name as u64);
+    }
+
+    fn add_gfa_link<T: OptFields>(&mut self, link: &Link<usize, T>) {
+        let left = Handle::new(link.from_segment as u64, link.from_orient);
+        let right = Handle::new(link.to_segment as u64, link.to_orient);
+
+        self.create_edge(GraphEdge(left, right));
+    }
+
+    fn add_gfa_path<T: OptFields>(&mut self, path: &gfa2::gfa1::Path<usize, T>) {
+        let path_id = self.create_path_handle(&path.path_name, false);
+        for (name, orient) in path.iter() {
+            self.append_step(&path_id, Handle::new(name as u64, orient));
+        }
+    }
+
+    /// Function that takes a GFA2 object as input and return a HashGraph object
+    /// # Example
+    /// ```ignore
+    /// let parser = GFAParser::new();
+    /// let gfa: Option<GFA<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
+    ///
+    /// if let Some(gfa) = gfa {
+    ///     let graph = HashGraph::from_gfa1(&gfa);
+    ///     println!("{:#?}", graph);
+    /// } else {
+    ///     panic!("Couldn't parse test GFA file!");
+    /// }
+    /// 
+    /// /*
+    /// HashGraph {
+    /// max_id: NodeId(13),
+    /// min_id: NodeId(11),
+    ///     graph: {
+    ///         NodeId(13): Node {
+    ///             sequence: "CTTGATT",
+    ///             left_edges: [
+    ///                 Handle(24),
+    ///                 Handle(23),
+    ///             ],
+    ///             right_edges: [],
+    ///             occurrences: {0: 2},
+    ///         },
+    ///         NodeId(12): Node {
+    ///             sequence: "TCAAGG",
+    ///             left_edges: [
+    ///                 Handle(26),
+    ///             ],
+    ///             right_edges: [
+    ///                 Handle(23),
+    ///             ],
+    ///             occurrences: {0: 1},
+    ///         },
+    ///         NodeId(11): Node {
+    ///             sequence: "ACCTT",
+    ///             left_edges: [],
+    ///             right_edges: [
+    ///                 Handle(25),
+    ///                 Handle(26),
+    ///             ],
+    ///             occurrences: {0: 0},
+    ///         },
+    ///     },
+    ///     path_id: {
+    ///         [49,52]: 0
+    ///     },
+    ///     paths: {
+    ///         0: Path {
+    ///             path_id: 0,
+    ///             name: "14",
+    ///             is_circular: false,
+    ///             nodes: [
+    ///                 Handle(22),
+    ///                 Handle(25),
+    ///                 Handle(26),
+    ///             ],
+    ///         },
+    ///     },
+    /// }
+    /// */
+    /// ```
+    pub fn from_gfa<T: OptFields>(gfa: &GFA<usize, T>) -> HashGraph {
+        let mut graph = Self::new();
+        gfa.segments.iter().for_each(|s| graph.add_gfa_segment(s));
+        gfa.links.iter().for_each(|l| graph.add_gfa_link(l));
+        gfa.paths.iter().for_each(|p| graph.add_gfa_path(p));
         graph
     }
 

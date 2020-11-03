@@ -63,24 +63,74 @@ fn can_create_edges() {
     assert_eq!(true, n4.left_edges.contains(&h3.flip()));
 }
 
-fn read_test_gfa() -> HashGraph {
+fn read_test_gfa2() -> HashGraph {
     use gfa2::gfa2::GFA2;
     use gfa2::parser_gfa2::GFA2Parser;
 
     let parser = GFA2Parser::new();
     let gfa: GFA2<usize, ()> = parser.parse_file("./tests/gfa2_files/big.gfa").unwrap();
 
-    HashGraph::from_gfa(&gfa)
+    HashGraph::from_gfa2(&gfa)
 }
 
 #[test]
-fn construct_from_gfa() {
+fn construct_from_gfa2() {
     use bstr::BStr;
     use gfa2::gfa2::GFA2;
     use gfa2::parser_gfa2::GFA2Parser;
 
     let parser = GFA2Parser::new();
     let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/data.gfa").ok();
+
+    if let Some(gfa) = gfa {
+        let graph = HashGraph::from_gfa2(&gfa);
+        let mut node_ids: Vec<_> = graph.graph.keys().collect();
+        node_ids.sort();
+
+        println!("Nodes & edges");
+        for id in node_ids.iter() {
+            let node = graph.graph.get(id).unwrap();
+            
+            let seq: &BStr = node.sequence.as_ref();
+            println!("  id: {:2} sequence: {}", u64::from(**id), seq);
+            let lefts: Vec<_> =
+                node.left_edges.iter().map(|x| u64::from(x.id())).collect();
+            println!("  Left edges id:  {:?}", lefts);
+            let rights: Vec<_> =
+                node.right_edges.iter().map(|x| u64::from(x.id())).collect();
+            println!("  Right edges id: {:?}", rights);
+        }
+    } else {
+        panic!("Couldn't parse test GFA file!");
+    }
+}
+
+#[test]
+fn handlegraph_to_gfa2() {
+    use bstr::BString;
+    use gfa2::{
+        gfa2::GFA2,
+        parser_gfa2::GFA2Parser,
+    };
+
+    let parser = GFA2Parser::new();
+    let gfa_in: GFA2<usize, ()> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").unwrap();
+    
+    let graph: HashGraph = from_gfa2(&gfa_in);
+    let gfa_out: GFA2<BString, ()> = to_gfa2(&graph);
+
+    println!("{}", gfa_out);
+    println!("{}", gfa_in); 
+}
+
+#[test]
+fn construct_from_gfa() {
+    use bstr::BStr;
+    use gfa2::gfa1::GFA;
+    use gfa2::parser_gfa1::GFAParser;
+
+    let parser = GFAParser::new();
+    let gfa: Option<GFA<usize, ()>> = parser.parse_file("./tests/gfa1_files/lil.gfa").ok();
 
     if let Some(gfa) = gfa {
         let graph = HashGraph::from_gfa(&gfa);
@@ -107,21 +157,20 @@ fn construct_from_gfa() {
 
 #[test]
 fn handlegraph_to_gfa() {
-    use bstr::BString;
-    use gfa2::{
-        gfa2::GFA2,
-        parser_gfa2::GFA2Parser,
-    };
+    use gfa2::gfa1::GFA;
+    use gfa2::parser_gfa1::GFAParser;
 
-    let parser = GFA2Parser::new();
-    let gfa_in: GFA2<usize, ()> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").unwrap();
+
+    let parser = GFAParser::new();
+    let gfa_in: GFA<usize, ()> = parser.parse_file("./tests/gfa1_files/lil.gfa").unwrap();
     
     let graph: HashGraph = from_gfa(&gfa_in);
-    let gfa_out: GFA2<BString, ()> = to_gfa(&graph);
+    let gfa_out: GFA<usize, ()> = to_gfa(&graph);
 
     println!("{}", gfa_out);
     println!("{}", gfa_in); 
 }
+
 
 #[test]
 fn can_reverse_complement() {
@@ -157,7 +206,7 @@ fn can_reverse_complement() {
 
 #[test]
 fn degree_is_correct() {
-    let graph = read_test_gfa();
+    let graph = read_test_gfa2();
 
     let h1 = Handle::pack(9, false);
     let h2 = Handle::pack(3, false);
