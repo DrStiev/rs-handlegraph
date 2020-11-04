@@ -119,8 +119,8 @@ fn handlegraph_to_gfa2() {
     let graph: HashGraph = from_gfa2(&gfa_in);
     let gfa_out: GFA2<BString, ()> = to_gfa2(&graph);
 
-    println!("{}", gfa_out);
-    println!("{}", gfa_in); 
+    println!("Original GFA2 file:\n{}", gfa_in);
+    println!("GFA2 file after graph:\n{}", gfa_out); 
 }
 
 #[test]
@@ -168,8 +168,8 @@ fn handlegraph_to_gfa() {
     let graph: HashGraph = from_gfa(&gfa_in);
     let gfa_out: GFA<BString, ()> = to_gfa(&graph);
 
-    println!("{}", gfa_out);
-    println!("{}", gfa_in); 
+    println!("Original GFA1 file:\n{}", gfa_in);
+    println!("GFA1 file after graph:\n{}", gfa_out);
 }
 
 
