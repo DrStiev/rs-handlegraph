@@ -473,10 +473,10 @@ where
 /// # Example
 /// ```ignore
 /// let parser = GFAParser::new();
-/// let gfa_in: GFA<usize, ()> = parser.parse_file("./tests/gfa2_files/file.gfa").unwrap();
+/// let gfa_in: GFA<BString, ()> = parser.parse_file("./tests/gfa2_files/file.gfa").unwrap();
 ///
 /// let graph = HashGraph::from_gfa(&gfa_in);
-/// let gfa_out: GFA<usize, ()> = handlegraph2::conversion::to_gfa(&graph);
+/// let gfa_out: GFA<BString, ()> = handlegraph2::conversion::to_gfa(&graph);
 ///
 /// println!("{}", gfa_out);
 /// println!("{}", gfa_in);
@@ -503,12 +503,12 @@ where
 /// P   14  11+ 12- 13+ 0M
 /// */
 /// ```
-pub fn to_gfa(graph: &HashGraph) -> GFA<usize, ()> {
+pub fn to_gfa(graph: &HashGraph) -> GFA<BString, ()> {
     use crate::handlegraph::*;
-    let mut gfa = GFA::new();
+    let mut gfa: GFA<BString, ()> = GFA::new();
 
     for handle in graph.all_handles() {
-        let name = usize::from(handle.id());
+        let name = BString::from(handle.id().to_string());
         let sequence: BString = graph.sequence_iter(handle.forward()).collect();
 
         let segment = Segment1 {
@@ -529,9 +529,9 @@ pub fn to_gfa(graph: &HashGraph) -> GFA<usize, ()> {
 
     for edge in graph.all_edges() {
         let Edge(left, right) = edge;
-        let from_segment: usize = usize::from(left.id());
+        let from_segment: BString = BString::from(left.id().to_string());
         let from_orient = orient(left.is_reverse());
-        let to_segment: usize = usize::from(right.id());
+        let to_segment: BString = BString::from(right.id().to_string());
         let to_orient = orient(right.is_reverse());
         let overlap = BString::from("0M");
 
@@ -552,7 +552,7 @@ pub fn to_gfa(graph: &HashGraph) -> GFA<usize, ()> {
         let mut segment_names: Vec<Vec<u8>> = Vec::new();
         for step in graph.steps_iter(path_id) {
             let handle = graph.handle_of_step(&step).unwrap();
-            let segment: usize = handle.id().into();
+            let segment: BString = handle.id().to_string().into();
             let orientation = orient(handle.is_reverse());
             segment_names.push(segment.to_string().into());
             segment_names.push(orientation.to_string().into());
@@ -561,7 +561,7 @@ pub fn to_gfa(graph: &HashGraph) -> GFA<usize, ()> {
         let segment_names: BString =
             segment_names.into_iter().flatten().collect();
 
-        let path: Path<usize, ()> =
+        let path: Path<BString, ()> =
             Path::new(path_name, segment_names, "0M".into(), ());
 
         gfa.paths.push(path);

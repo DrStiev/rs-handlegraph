@@ -159,13 +159,14 @@ fn construct_from_gfa() {
 fn handlegraph_to_gfa() {
     use gfa2::gfa1::GFA;
     use gfa2::parser_gfa1::GFAParser;
+    use bstr::BString;
 
 
     let parser = GFAParser::new();
     let gfa_in: GFA<usize, ()> = parser.parse_file("./tests/gfa1_files/lil.gfa").unwrap();
     
     let graph: HashGraph = from_gfa(&gfa_in);
-    let gfa_out: GFA<usize, ()> = to_gfa(&graph);
+    let gfa_out: GFA<BString, ()> = to_gfa(&graph);
 
     println!("{}", gfa_out);
     println!("{}", gfa_in); 
