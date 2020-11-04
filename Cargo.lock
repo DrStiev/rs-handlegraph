@@ -304,7 +304,7 @@ dependencies = [
 [[package]]
 name = "gfa2"
 version = "0.9.9"
-source = "git+https://github.com/DrStiev/rs-gfa2#9966cc74ed7ab6216d5d5375c19a4751e6d88725"
+source = "git+https://github.com/DrStiev/rs-gfa2#34efad58035aef16dd92f6ec270dcd0ea50bb96e"
 dependencies = [
  "bstr",
  "bytemuck",

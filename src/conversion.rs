@@ -16,6 +16,7 @@ use gfa2::{
         orientation::Orientation
     },
     gfa1::{
+        Header as Header1,
         Link, 
         Segment as Segment1,
         Path, 
@@ -258,13 +259,15 @@ where
 pub fn to_gfa2(graph: &HashGraph) -> GFA2<BString, ()> {
     use crate::handlegraph::*;
     // I think it can be more efficient but for now it's good 
-    let mut file = GFA2::new();
+    let mut file: GFA2<BString, ()> = GFA2::new();
 
     // default header
-    file.headers = vec![
-        Header::new(Some("VN:Z:2.0".into()))
-    ];
-    
+    let header = Header {
+        version: Some("VN:Z:2.0".into()),
+        tag: (),
+    };
+    file.headers.push(header); 
+
     for handle in graph.all_handles() {
         let seq_id = BString::from(handle.id().to_string());
         let sequence: BString = graph.sequence_iter(handle.forward()).collect();
@@ -506,6 +509,13 @@ where
 pub fn to_gfa(graph: &HashGraph) -> GFA<BString, ()> {
     use crate::handlegraph::*;
     let mut gfa: GFA<BString, ()> = GFA::new();
+
+    // default header
+    let header = Header1 {
+        version: Some("VN:Z:1.0".into()),
+        optional: (),
+    };
+    gfa.headers.push(header);
 
     for handle in graph.all_handles() {
         let name = BString::from(handle.id().to_string());
