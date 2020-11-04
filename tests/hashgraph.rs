@@ -124,7 +124,7 @@ fn handlegraph_to_gfa2() {
 }
 
 #[test]
-fn construct_from_gfa() {
+fn construct_from_gfa1() {
     use bstr::BStr;
     use gfa2::gfa1::GFA;
     use gfa2::parser_gfa1::GFAParser;
@@ -156,7 +156,7 @@ fn construct_from_gfa() {
 }
 
 #[test]
-fn handlegraph_to_gfa() {
+fn handlegraph_to_gfa1() {
     use gfa2::gfa1::GFA;
     use gfa2::parser_gfa1::GFAParser;
     use bstr::BString;

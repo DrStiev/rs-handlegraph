@@ -330,9 +330,11 @@ pub fn to_gfa2(graph: &HashGraph) -> GFA2<BString, ()> {
             segment_names.push(" ".to_string());
         }
 
-        let segment_names: String = 
+        let mut segment_names: String = 
             segment_names.iter().fold(String::new(), |acc, str| acc + &str.to_string());
 
+        // remove the last comma " " 
+        segment_names.pop();
         let ogroup: GroupO<BString, _> = 
             GroupO::new(path_name, BString::from(segment_names), ());
         file.groups_o.push(ogroup);
@@ -559,20 +561,24 @@ pub fn to_gfa(graph: &HashGraph) -> GFA<BString, ()> {
 
     for path_id in graph.paths_iter() {
         let path_name: BString = graph.path_handle_to_name(path_id).into();
-        let mut segment_names: Vec<Vec<u8>> = Vec::new();
+        let mut segment_names: Vec<String> = Vec::new();
         for step in graph.steps_iter(path_id) {
             let handle = graph.handle_of_step(&step).unwrap();
-            let segment: BString = handle.id().to_string().into();
+            let segment: String = handle.id().to_string();
             let orientation = orient(handle.is_reverse());
-            segment_names.push(segment.to_string().into());
-            segment_names.push(orientation.to_string().into());
+
+            segment_names.push(segment);
+            segment_names.push(orientation.to_string());
             segment_names.push(",".into());
         }
-        let segment_names: BString =
-            segment_names.into_iter().flatten().collect();
+        let mut segment_names: String =
+            segment_names.iter().fold(String::new(), |acc, str| acc + &str.to_string());
 
+        // remove the last comma "," otherwise it will produce an error 
+        // that could break everything (overflow and other bad stuff)
+        segment_names.pop();
         let path: Path<BString, ()> =
-            Path::new(path_name, segment_names, "0M".into(), ());
+            Path::new(path_name, BString::from(segment_names), "0M".into(), ());
 
         gfa.paths.push(path);
     }
