@@ -63,24 +63,19 @@ impl Add<u64> for NodeId {
 #[repr(transparent)]
 pub struct Handle(pub u64);
 
-impl From<Handle> for u64 {
+/// Returns the forward-oriented `Handle` for a `NodeId`
+impl From<NodeId> for Handle {
     #[inline]
-    fn from(h: Handle) -> Self {
-        h.0 >> 1
+    fn from(id: NodeId) -> Handle {
+        Handle(id.0 << 1)
     }
 }
 
-impl From<u32> for Handle {
+/// Unpacks the `NodeId` from a `Handle`
+impl From<Handle> for NodeId {
     #[inline]
-    fn from(i: u32) -> Self {
-        Handle::from_integer((i << 1) as u64)
-    }
-}
-
-impl From<i32> for Handle {
-    #[inline]
-    fn from(i: i32) -> Self {
-        Handle::from_integer((i << 1) as u64)
+    fn from(h: Handle) -> NodeId {
+        h.id()
     }
 }
 
@@ -105,15 +100,6 @@ impl Handle {
         self.as_integer() & 1 != 0
     }
 
-    /// Return an handle object
-    /// # Example
-    /// ```ignore
-    /// use gfa2::Orientation::*;
-    /// use handlegraph2::Handle;
-    /// 
-    /// let left = Handle::new(id_left as u64, Orientation::Forward);
-    /// let right = Handle::new(id_right as u64, Orientation::Backward);
-    /// ```
     #[inline]
     pub fn new<T: Into<NodeId>>(id: T, orient: Orientation) -> Handle {
         let id: NodeId = id.into();
@@ -210,7 +196,7 @@ mod tests {
     }
 
     // Handle::pack should panic when the provided NodeId is invalid
-    // (i.e. uses the 64th bit)
+    // (i.e. uses the 64th bit
     #[test]
     #[should_panic]
     fn handle_pack_panic() {

@@ -25,8 +25,8 @@ fn can_create_handles() {
     let n2 = graph.get_node_unchecked(&h2.id());
     let n3 = graph.get_node_unchecked(&h3.id());
 
-    assert_eq!(u64::from(h1), 1);
-    assert_eq!(u64::from(h3), 3);
+    assert_eq!(u64::from(h1.id()), 1);
+    assert_eq!(u64::from(h3.id()), 3);
 
     assert_eq!(n1.sequence.as_slice(), b"CAAATAAG");
     assert_eq!(n2.sequence.as_slice(), b"A");
@@ -121,6 +121,176 @@ fn handlegraph_to_gfa2() {
 
     println!("Original GFA2 file:\n{}", gfa_in);
     println!("GFA2 file after graph:\n{}", gfa_out); 
+}
+
+#[test]
+fn remove_node_from_graph() {
+    use bstr::BStr;
+    use gfa2::gfa2::GFA2;
+    use gfa2::parser_gfa2::GFA2Parser;
+
+    let parser = GFA2Parser::new();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
+
+    if let Some(gfa) = gfa {
+        let mut graph = HashGraph::from_gfa2(&gfa);
+        let mut node_ids: Vec<_> = graph.graph.keys().collect();
+        node_ids.sort();
+    
+        println!("Graph before removing node 12: ");
+        println!("Nodes & edges");
+        for id in node_ids.iter() {
+            let node = graph.graph.get(id).unwrap();
+            
+            let seq: &BStr = node.sequence.as_ref();
+            println!("  id: {:2} sequence: {}", u64::from(**id), seq);
+            let lefts: Vec<_> =
+                node.left_edges.iter().map(|x| u64::from(x.id())).collect();
+            println!("  Left edges id:  {:?}", lefts);
+            let rights: Vec<_> =
+                node.right_edges.iter().map(|x| u64::from(x.id())).collect();
+            println!("  Right edges id: {:?}", rights);
+        }
+
+        println!();
+
+        let remove_id: NodeId = 12.into();
+        if graph.remove_handle(remove_id) {
+            let mut node_ids: Vec<_> = graph.graph.keys().collect();
+            node_ids.sort();
+        
+            println!("Graph after removing node 12: ");
+            println!("Nodes & edges");
+            for id in node_ids.iter() {
+                let node = graph.graph.get(id).unwrap();
+                
+                let seq: &BStr = node.sequence.as_ref();
+                println!("  id: {:2} sequence: {}", u64::from(**id), seq);
+                let lefts: Vec<_> =
+                    node.left_edges.iter().map(|x| u64::from(x.id())).collect();
+                println!("  Left edges id:  {:?}", lefts);
+                let rights: Vec<_> =
+                    node.right_edges.iter().map(|x| u64::from(x.id())).collect();
+                println!("  Right edges id: {:?}", rights);
+            }
+        }
+    } else {
+        panic!("Couldn't parse test GFA file!");
+    }
+}
+
+#[test]
+fn remove_edge_from_graph() {
+    use bstr::BStr;
+    use gfa2::gfa2::GFA2;
+    use gfa2::parser_gfa2::GFA2Parser;
+
+    let parser = GFA2Parser::new();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
+
+    if let Some(gfa) = gfa {
+        let mut graph = HashGraph::from_gfa2(&gfa);
+        let mut node_ids: Vec<_> = graph.graph.keys().collect();
+        node_ids.sort();
+    
+        println!("Graph before removing edge: ");
+        println!("Nodes & edges");
+        for id in node_ids.iter() {
+            let node = graph.graph.get(id).unwrap();
+            
+            let seq: &BStr = node.sequence.as_ref();
+            println!("  id: {:2} sequence: {}", u64::from(**id), seq);
+            let lefts: Vec<_> =
+                node.left_edges.iter().map(|x| u64::from(x.id())).collect();
+            println!("  Left edges id:  {:?}", lefts);
+            let rights: Vec<_> =
+                node.right_edges.iter().map(|x| u64::from(x.id())).collect();
+            println!("  Right edges id: {:?}", rights);
+        }
+        
+        println!();
+
+        let mut graph1 = HashGraph::new();
+        let h1 = graph1.create_handle(b"ACCTT", 11);
+        let h3 = graph1.create_handle(b"CTTGATT", 13);
+
+        graph1.create_edge(Edge(h1, h3));
+
+        if graph.remove_edge(Edge(h1, h3)) {
+            let mut node_ids: Vec<_> = graph.graph.keys().collect();
+            node_ids.sort();
+        
+            println!("Graph after removing {:?}: ", Edge(h1, h3));
+            println!("Nodes & edges");
+            for id in node_ids.iter() {
+                let node = graph.graph.get(id).unwrap();
+                
+                let seq: &BStr = node.sequence.as_ref();
+                println!("  id: {:2} sequence: {}", u64::from(**id), seq);
+                let lefts: Vec<_> =
+                    node.left_edges.iter().map(|x| u64::from(x.id())).collect();
+                println!("  Left edges id:  {:?}", lefts);
+                let rights: Vec<_> =
+                    node.right_edges.iter().map(|x| u64::from(x.id())).collect();
+                println!("  Right edges id: {:?}", rights);
+            }
+        }
+    } else {
+        panic!("Couldn't parse test GFA file!");
+    }
+}
+
+#[test]
+fn remove_path_from_graph() {
+    use bstr::BString;
+    use gfa2::gfa2::GFA2;
+    use gfa2::parser_gfa2::GFA2Parser;
+
+    let parser = GFA2Parser::new();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
+
+    if let Some(gfa) = gfa {
+        let mut graph = HashGraph::from_gfa2(&gfa);
+        println!("Graph before removing path: ");
+        let mut x :i64 = 0;
+        while !graph.get_path(&x).is_none() {
+            // ACCTT -> TCAAGG -> CTTGATT
+            graph.print_path(&x);
+            x +=1;
+        }
+            
+        println!();
+
+        if graph.remove_path(&BString::from(15.to_string())) {
+            println!("Graph after removing path: ");
+            let mut x :i64 = 0;
+            while !graph.get_path(&x).is_none() {
+                // ACCTT -> TCAAGG -> CTTGATT
+                graph.print_path(&x);
+                x +=1;
+            }
+        }
+    } else {
+        panic!("Couldn't parse test GFA file!");
+    }
+}
+
+#[test]
+fn clear_graph() {
+    use bstr::BStr;
+    use gfa2::gfa2::GFA2;
+    use gfa2::parser_gfa2::GFA2Parser;
+
+    let parser = GFA2Parser::new();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
+
+    if let Some(gfa) = gfa {
+        let mut graph = HashGraph::from_gfa2(&gfa);
+        graph.clear_graph();
+        println!("Graph cleared!\n{:#?}", graph);
+    } else {
+        panic!("Erro with the GFA file!");
+    }
 }
 
 #[test]

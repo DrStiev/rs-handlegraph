@@ -119,43 +119,88 @@ impl<'a> HandleGraphRef for &'a HashGraph {
     }
 }
 
-// TODO: add impl SubtractiveHandleGraph for HashGraph {}
-impl SubtractiveHandleGraph for HashGraph {
-    fn remove_handle(&mut self, handle: Handle) -> bool {
-        /*
-            check if the handle -> nodeid exists
-            if not return false with an error
-            else remove it and return true
-            if it cannot ben removed, panic!
-            
-            to remove an handle: 
-            use item.remove(item)
-            use as reference rewrite_segment
-         */
+// TODO: add ModdableHandleGraph trait
+/*
+impl ModdableHandleGraph for HashGraph {
+    fn modify_handle<T: Into<NodeId>>(
+        &mut self,
+        node_id: T, 
+        seq: &[u8]
+    ) -> Handle {
+        let node = 
+            self
+            .graph
+            .get(&node_id.into())
+            .expect("Node doesn't exist for the given Id");
+        
+        if seq.is_empty() {
+            panic!("Tried to add empty handle!");
+        } else {
+            self.graph.update(node.id);
+        }
+    }
 
-        true
+    fn modify_edge<T: Into<NodeId>>(
+        &mut self,
+        edge: Edge, 
+        left_node_id: Option<T>, 
+        right_node_id: Option<T>
+    ){}
+}
+*/
+
+// TODO: find a way to handle the path after remove_handle and remove_edge
+// otherwise the software will crash 
+impl SubtractiveHandleGraph for HashGraph {
+    fn remove_handle<T: Into<NodeId>>(&mut self, node: T) -> bool {
+        let node_id: NodeId = node.into();
+        if !self.graph.get(&node_id).is_none() {
+            self.graph.remove(&node_id);
+            // delete all the occurrencies in the edge list of node.id()
+            for handle in self.clone().graph.keys() {
+                self.graph.get_mut(&handle).unwrap().left_edges.retain(|x| x.id() != node_id);
+                self.graph.get_mut(&handle).unwrap().right_edges.retain(|x| x.id() != node_id);
+            }
+            true
+        } else {
+            false
+        }
     }
 
     fn remove_edge(&mut self, edge: Edge) -> bool {
-        /*
-            check if the edge exists
-            if not return false with an error
-            else remove it and return true
-            if it cannot ben removed, panic!
-            
-            to remove an edge:
-            use item.remove(item)
-            use as reference rewrite_segment
-         */
+        let Edge(left, right) = edge;
+        if self.has_edge(left, right) {
+            for handle in self.clone().graph.keys() {
+                if let Some(left_index) = self.graph.get_mut(&handle).unwrap().left_edges.iter().position(|x| x.id() == left.id()) {
+                    self.graph.get_mut(&handle).unwrap().left_edges.remove(left_index);
+                }
+                if let Some(right_index) = self.graph.get_mut(&handle).unwrap().right_edges.iter().position(|x| x.id() == right.id()) {
+                    self.graph.get_mut(&handle).unwrap().right_edges.remove(right_index);
+                }
+            }
+            true
+        } else {
+            false
+        }   
+    }
 
-        true
+    fn remove_path(&mut self, name: &[u8]) -> bool {
+        if self.has_path(name) {
+            let path_handle = self.name_to_path_handle(name).unwrap();
+            self.destroy_path(&path_handle);
+            true
+        } else {
+            false
+        }
     }
 
     fn clear_graph(&mut self) {
-        /*
-            delete all the information in the graph
-            use graph.remove(&graph)
-        */
+        self.max_id = NodeId::from(0);
+        self.min_id = NodeId::from(std::u64::MAX);
+        // clears the map, removing all key-value pairs
+        self.graph.clear();
+        self.path_id.clear();
+        self.paths.clear();
     }
 }
 

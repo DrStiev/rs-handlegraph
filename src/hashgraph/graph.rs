@@ -303,6 +303,7 @@ impl HashGraph {
     /// while !graph.get_path(&x).is_none() {
     ///     // ACCTT -> TCAAGG -> CTTGATT
     ///     graph.print_path(&x);
+    ///     x +=1;
     /// } 
     /// ```
     pub fn print_path(&self, path_id: &PathId) {
@@ -369,7 +370,7 @@ impl HashGraph {
     /// graph.append_step(&p1, h2);
     /// 
     /// // Some(Path { path_id: 0, name: "path-1", is_circular: false, nodes: [Handle(22), Handle(24)] })
-    /// println!("{:?}", graph.get_node(&11)); 
+    /// println!("{:?}", graph.get_path(&0)); 
     /// ```
     pub fn get_path(&self, path_id: &PathId) -> Option<&Path> {
         self.paths.get(path_id)

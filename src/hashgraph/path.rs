@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use bstr::BString;
 use fnv::FnvHashMap;
 
@@ -42,21 +44,19 @@ pub struct Path {
     pub nodes: Vec<Handle>,
 }
 
+/*
 pub struct PathStepIter<'a> {
     handles: std::slice::Iter<'a, Handle>,
     index: usize,
 }
-
 impl<'a> PathStepIter<'a> {
     fn new(nodes: &'a [Handle]) -> PathStepIter<'a> {
         let handles = nodes.iter();
         Self { handles, index: 0 }
     }
 }
-
 impl<'a> Iterator for PathStepIter<'a> {
     type Item = crate::pathhandlegraph::PathStep;
-
     fn next(&mut self) -> Option<Self::Item> {
         let _handle = self.handles.next()?;
         let ix = self.index;
@@ -65,6 +65,7 @@ impl<'a> Iterator for PathStepIter<'a> {
         Some(item)
     }
 }
+*/
 
 /*
 use crate::pathhandlegraph::PathStep as PStep;

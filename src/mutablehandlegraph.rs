@@ -2,10 +2,51 @@ use crate::handle::{Edge, Handle, NodeId};
 use crate::handlegraph::{HandleGraph, HandleGraphRef};
 
 pub trait SubtractiveHandleGraph {
-    fn remove_handle(&mut self, handle: Handle) -> bool;
+    /// Function that remove a node and all its occurrencies 
+    /// # Example
+    /// ```ignore
+    /// // Nodes: 11, 12, 13
+    /// // Edges: 11 -> 12, 11 -> 13, 12 -> 13
+    /// 
+    /// let remove_id: NodeId = 12.into();
+    /// graph.remove_handle(remove_id);
+    /// 
+    /// // Nodes: 11, 13
+    /// // Edges: 11 -> 13
+    /// ```
+    fn remove_handle<T: Into<NodeId>>(&mut self, node: T) -> bool;
 
+    /// Function that removes an Edge (Link) between 2 nodes
+    /// # Example
+    /// ```ignore
+    /// // Nodes: 11, 12, 13
+    /// // Edges: 11 -> 12, 11 -> 13, 12 -> 13
+    /// 
+    /// let h1: NodeId = 11.into();
+    /// let h3: NodeId = 13.into();
+    /// graph.remove_edge(Edge(h1, h3));
+    /// 
+    /// // Nodes: 11, 12, 13
+    /// // Edges: 11 -> 12, 12 -> 13
+    /// ```
     fn remove_edge(&mut self, edge: Edge) -> bool;
 
+    /// Function that removes an Edge (Link) between 2 nodes
+    /// # Example
+    /// ```ignore
+    /// // Nodes: 11, 12, 13
+    /// // Edges: 11 -> 12, 11 -> 13, 12 -> 13
+    /// // Path: 0 (14): 11 -> 12 -> 13, 1 (15): 11 -> 13
+    /// graph.remove_path(&BString::from(15.to_string()));
+    /// 
+    /// // Nodes: 11, 12, 13
+    /// // Edges: 11 -> 12, 11 -> 13, 12 -> 13
+    /// // Path: 0 (14): 11 -> 12 -> 13
+    /// ```
+    fn remove_path(&mut self, name: &[u8]) -> bool;
+
+    /// Function that clears the graph and set max_id to 0 and min_id to u64::MAX
+    /// like the Default implementation fore HashGraph
     fn clear_graph(&mut self);
 }
 
@@ -22,6 +63,7 @@ pub trait AdditiveHandleGraph {
 }
 
 pub trait ModdableHandleGraph {
+    /*
     fn divide_handle(
         &mut self,
         handle: Handle,
@@ -38,6 +80,20 @@ pub trait ModdableHandleGraph {
     }
 
     fn apply_orientation(&mut self, handle: Handle) -> Handle;
+    */
+
+    fn modify_handle<T: Into<NodeId>>(
+        &mut self, 
+        node_id: T, 
+        seq: &[u8]
+    ) -> Handle;
+    
+    fn modify_edge<T: Into<NodeId>>(
+        &mut self, 
+        edge: Edge, 
+        left_node_id: Option<T>, 
+        right_node_id: Option<T>
+    );
 }
 
 /// Trait encapsulating the mutable aspects of a handlegraph
