@@ -149,8 +149,6 @@ impl ModdableHandleGraph for HashGraph {
 }
 */
 
-// TODO: find a way to handle the path after remove_handle and remove_edge
-// otherwise the software will crash 
 impl SubtractiveHandleGraph for HashGraph {
     fn remove_handle<T: Into<NodeId>>(&mut self, node: T) -> bool {
         let node_id: NodeId = node.into();
@@ -161,6 +159,15 @@ impl SubtractiveHandleGraph for HashGraph {
                 self.graph.get_mut(&handle).unwrap().left_edges.retain(|x| x.id() != node_id);
                 self.graph.get_mut(&handle).unwrap().right_edges.retain(|x| x.id() != node_id);
             }
+            // delete occurrencies of nodeid in path but leaves "holes" in it
+            let mut x :i64 = 0;
+            while !self.get_path(&x).is_none() {
+                let nodes = &self.paths.get_mut(&x).unwrap().nodes;
+                if let Some(_) = nodes.iter().find(|x| x.id() == node_id) {
+                    self.paths.remove(&x);
+                }
+                x +=1;
+            }
             true
         } else {
             false
@@ -170,12 +177,33 @@ impl SubtractiveHandleGraph for HashGraph {
     fn remove_edge(&mut self, edge: Edge) -> bool {
         let Edge(left, right) = edge;
         if self.has_edge(left, right) {
+            let mut find_left: bool = false;
+            let mut find_right: bool = false;
             for handle in self.clone().graph.keys() {
                 if let Some(left_index) = self.graph.get_mut(&handle).unwrap().left_edges.iter().position(|x| x.id() == left.id()) {
+                    find_left = true;
                     self.graph.get_mut(&handle).unwrap().left_edges.remove(left_index);
                 }
                 if let Some(right_index) = self.graph.get_mut(&handle).unwrap().right_edges.iter().position(|x| x.id() == right.id()) {
+                    find_right = true;
                     self.graph.get_mut(&handle).unwrap().right_edges.remove(right_index);
+                }
+                if find_left && find_right {
+                    // delete occurrencies of nodeid in path but leaves "holes" in it
+                    let mut x :i64 = 0;
+                    while !self.get_path(&x).is_none() {
+                        let nodes = &self.paths.get_mut(&x).unwrap().nodes;
+                        if let Some(l) = nodes.iter().position(|x| x.id() == left.id()) {
+                            if let Some(r) = nodes.iter().position(|x| x.id() == right.id()) {
+                                let lr = l + 1;
+                                if lr == r {
+                                    self.print_path(&x);
+                                    self.paths.remove(&x);
+                                }
+                            }
+                        }
+                        x +=1;
+                    }
                 }
             }
             true
@@ -186,6 +214,7 @@ impl SubtractiveHandleGraph for HashGraph {
 
     fn remove_path(&mut self, name: &[u8]) -> bool {
         if self.has_path(name) {
+            // delete occurrencies in path leaves "holes"
             let path_handle = self.name_to_path_handle(name).unwrap();
             self.destroy_path(&path_handle);
             true

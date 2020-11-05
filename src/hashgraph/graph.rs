@@ -310,13 +310,16 @@ impl HashGraph {
         let path = self.paths.get(&path_id).unwrap();
         println!("Path\t{}", path_id);
         for (ix, handle) in path.nodes.iter().enumerate() {
-            let node = self.get_node(&handle.id()).unwrap();
-            if ix != 0 {
-                print!(" -> ");
+            let node = self.get_node(&handle.id());
+            if !node.is_none() {
+                if ix != 0 {
+                    print!(" -> ");
+                }
+                print!("{}", node.unwrap().sequence);
+            } else {
+                print!(" -> This node do not exists anymore");
             }
-            print!("{}", node.sequence);
         }
-
         println!();
     }
 

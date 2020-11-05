@@ -173,6 +173,7 @@ fn remove_node_from_graph() {
                     node.right_edges.iter().map(|x| u64::from(x.id())).collect();
                 println!("  Right edges id: {:?}", rights);
             }
+            graph.print_path(&1);
         }
     } else {
         panic!("Couldn't parse test GFA file!");
@@ -234,6 +235,8 @@ fn remove_edge_from_graph() {
                     node.right_edges.iter().map(|x| u64::from(x.id())).collect();
                 println!("  Right edges id: {:?}", rights);
             }
+            graph.print_path(&0);
+            //graph.print_path(&1);
         }
     } else {
         panic!("Couldn't parse test GFA file!");
