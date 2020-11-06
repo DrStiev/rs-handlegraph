@@ -174,6 +174,8 @@ fn remove_node_from_graph() {
                 println!("  Right edges id: {:?}", rights);
             }
             graph.print_path(&1);
+        }else {
+            println!("Failed to remove node 12");
         }
     } else {
         panic!("Couldn't parse test GFA file!");
@@ -214,10 +216,12 @@ fn remove_edge_from_graph() {
         let mut graph1 = HashGraph::new();
         let h1 = graph1.create_handle(b"ACCTT", 11);
         let h3 = graph1.create_handle(b"CTTGATT", 13);
-
+        // TODO: why this node it's not recognized whien used as edge? 
+        //let h3 = graph1.create_handle(b"TCAAGG", 12);
+        
         graph1.create_edge(Edge(h1, h3));
 
-        if graph.remove_edge(Edge(h1, h3)) {
+        if graph.remove_edge(Edge(h1, h3)){
             let mut node_ids: Vec<_> = graph.graph.keys().collect();
             node_ids.sort();
         
@@ -237,6 +241,8 @@ fn remove_edge_from_graph() {
             }
             graph.print_path(&0);
             //graph.print_path(&1);
+        } else {
+            println!("Failed to remove {:?}", Edge(h1, h3));
         }
     } else {
         panic!("Couldn't parse test GFA file!");
@@ -272,6 +278,8 @@ fn remove_path_from_graph() {
                 graph.print_path(&x);
                 x +=1;
             }
+        } else {
+            println!("Failed to remove path");
         }
     } else {
         panic!("Couldn't parse test GFA file!");

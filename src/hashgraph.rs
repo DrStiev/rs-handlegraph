@@ -176,7 +176,7 @@ impl SubtractiveHandleGraph for HashGraph {
 
     fn remove_edge(&mut self, edge: Edge) -> bool {
         let Edge(left, right) = edge;
-        if self.has_edge(left, right) {
+        if self.has_edge(left, right) || self.has_edge(right, left) {
             let mut find_left: bool = false;
             let mut find_right: bool = false;
             for handle in self.clone().graph.keys() {
@@ -189,24 +189,35 @@ impl SubtractiveHandleGraph for HashGraph {
                     self.graph.get_mut(&handle).unwrap().right_edges.remove(right_index);
                 }
                 if find_left && find_right {
-                    // delete occurrencies of nodeid in path but leaves "holes" in it
-                    let mut x :i64 = 0;
-                    while !self.get_path(&x).is_none() {
-                        let nodes = &self.paths.get_mut(&x).unwrap().nodes;
-                        if let Some(l) = nodes.iter().position(|x| x.id() == left.id()) {
-                            if let Some(r) = nodes.iter().position(|x| x.id() == right.id()) {
-                                let lr = l + 1;
-                                if lr == r {
-                                    self.print_path(&x);
-                                    self.paths.remove(&x);
-                                }
-                            }
-                        }
-                        x +=1;
-                    }
+                    break;
                 }
             }
-            true
+            if !find_left && !find_right {
+                return false;
+            } else {
+                // delete occurrencies of nodeid in path but leaves "holes" in it
+                let mut x :i64 = 0;
+                let mut find: bool = false;
+                while !self.get_path(&x).is_none() {
+                    let nodes = &self.paths.get_mut(&x).unwrap().nodes;
+                    if let Some(l) = nodes.iter().position(|x| x.id() == left.id()) {
+                        if let Some(r) = nodes.iter().position(|x| x.id() == right.id()) {
+                            let lr = l + 1;
+                            if lr == r {
+                                find = true;
+                                self.print_path(&x);
+                                self.paths.remove(&x);
+                            }
+                        }
+                    }
+                    x +=1;
+                }
+                if find {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
         } else {
             false
         }   
