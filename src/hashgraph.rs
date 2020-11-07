@@ -119,7 +119,6 @@ impl<'a> HandleGraphRef for &'a HashGraph {
     }
 }
 
-// TODO: add ModdableHandleGraph trait
 impl ModdableHandleGraph for HashGraph {
     fn modify_handle<T: Into<NodeId>>(
         &mut self,
@@ -142,6 +141,7 @@ impl ModdableHandleGraph for HashGraph {
         }
     }
 
+     // for now it's better to avoid backward orientation for handles
     fn modify_edge(
         &mut self,
         old_edge: Edge, 
@@ -151,35 +151,15 @@ impl ModdableHandleGraph for HashGraph {
         let Edge(left, right) = old_edge;
         let left_node = left_node.unwrap_or(left);
         let right_node = right_node.unwrap_or(right);
-        if self.has_edge(left, right) || self.has_edge(right, left) {
+        if self.has_edge(left, right) {
             if old_edge == Edge(left_node, right_node) {
                 // no need to update
                 return true;
-            } else if left != left_node && right != right_node {
+            } else {
                 // update Edge
-                for handle in self.clone().graph.keys() {
-                    if let Some(left_index) = self.graph.get_mut(&handle).unwrap().left_edges.iter().position(|x| x.id() == left.id()) {
-                        *self.graph.get_mut(&handle).unwrap().left_edges.get_mut(left_index).unwrap() = left_node;
-                    }
-                    if let Some(right_index) = self.graph.get_mut(&handle).unwrap().right_edges.iter().position(|x| x.id() == right.id()) {
-                        *self.graph.get_mut(&handle).unwrap().right_edges.get_mut(right_index).unwrap() = right_node;
-                    }
-                }
-            } else if left != left_node {
-                // update the left part of Edge
-                for handle in self.clone().graph.keys() {
-                    if let Some(left_index) = self.graph.get_mut(&handle).unwrap().left_edges.iter().position(|x| x.id() == left.id()) {
-                        *self.graph.get_mut(&handle).unwrap().left_edges.get_mut(left_index).unwrap() = left_node;
-                    }
-                }
-            } else /*if right != right_node*/ {
-                // update the right part of Edge
-                for handle in self.clone().graph.keys() {
-                    if let Some(right_index) = self.graph.get_mut(&handle).unwrap().right_edges.iter().position(|x| x.id() == right.id()) {
-                        *self.graph.get_mut(&handle).unwrap().right_edges.get_mut(right_index).unwrap() = right_node;
-                    }
-                }
-            } 
+                self.remove_edge(old_edge);
+                self.create_edge(Edge(left_node, right_node));
+            }
             // update occurrencies of nodeid in path
             let mut x :i64 = 0;
             while !self.get_path(&x).is_none() {
@@ -208,26 +188,13 @@ impl ModdableHandleGraph for HashGraph {
     ) -> bool {
         if self.has_path(path_name) {
             // update occurrencies in path
-            let path_handle = self.name_to_path_handle(path_name).unwrap();
+            self.remove_path(path_name); 
             let len: usize = sequence_of_id.len();
-            let old_len: usize = self.paths.get_mut(&path_handle).unwrap().nodes.len();
             let mut x: usize = 0;
+            let path = self.create_path_handle(path_name, false);
             while x < len {
-                if self.paths.get_mut(&path_handle).unwrap().nodes.get_mut(x).is_none() {
-                    // if the old_path it's smaller than the new one, insert the "new nodes"
-                    self.paths.get_mut(&path_handle).unwrap().nodes.push(sequence_of_id[x]);
-                }
-                *self.paths.get_mut(&path_handle).unwrap().nodes.get_mut(x).unwrap() = sequence_of_id[x];
-                x +=1;
-            }
-            if old_len > len {
-                let diff: usize = old_len - len;
-                let mut x: usize = 0;
-                while x < diff {
-                    // if the old_path it's bigger than the new one, remove the "excess nodes"
-                    self.paths.get_mut(&path_handle).unwrap().nodes.pop();
-                    x += 1;
-                }
+                self.append_step(&path, sequence_of_id[x]);
+                x += 1;
             }
             true
         } else {
@@ -261,18 +228,20 @@ impl SubtractiveHandleGraph for HashGraph {
         }
     }
 
-    // works better but still in a strange way
-    // so for now it's better to avoid backward orientation for handles
+    // for now it's better to avoid backward orientation for handles
     fn remove_edge(&mut self, edge: Edge) -> bool {
         let Edge(left, right) = edge;
-        if self.has_edge(left, right) || self.has_edge(right, left) {
-            // delete all the occurrencies of edge found in graph
-            for handle in self.clone().graph.keys() {
-                if let Some(left_index) = self.graph.get_mut(&handle).unwrap().left_edges.iter().position(|x| x.id() == left.id()) {
-                    self.graph.get_mut(&handle).unwrap().left_edges.remove(left_index);
-                }
-                if let Some(right_index) = self.graph.get_mut(&handle).unwrap().right_edges.iter().position(|x| x.id() == right.id()) {
-                    self.graph.get_mut(&handle).unwrap().right_edges.remove(right_index);
+        if self.has_edge(left, right) {
+             // delete all the occurrencies of edge found in graph
+            for edges in self.clone().all_edges() {
+                let Edge(l, _) = edges;
+                if edges == edge {
+                    let left_node = self
+                                    .graph
+                                    .get_mut(&l.id())
+                                    .expect("Node doesn't exist for the given handle");
+                    let pos = left_node.right_edges.iter().position(|&h| h == right).unwrap();
+                    self.graph.get_mut(&l.id()).unwrap().right_edges.remove(pos);
                 }
             }
             // delete occurrencies of nodeid in path but leaves "holes" in it

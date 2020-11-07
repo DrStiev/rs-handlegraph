@@ -1,5 +1,4 @@
 use crate::handle::{Edge, Handle, NodeId};
-use crate::hashgraph::Path;
 use crate::handlegraph::{HandleGraph, HandleGraphRef};
 
 pub trait SubtractiveHandleGraph {
@@ -84,6 +83,15 @@ pub trait ModdableHandleGraph {
     */
 
     /// given a node, this function will replace the sequence associated to the NodeId
+    /// # Example
+    /// ```ignore
+    /// if graph.modify_handle(14 as u64, b"TEST_SEQUENCE"){
+    ///     println!("Graph AFTER modify Node");
+    ///     graph.print_graph();
+    /// } else {
+    ///     println!("Failed to modify Node");
+    /// }
+    /// ```
     fn modify_handle<T: Into<NodeId>>(
         &mut self, 
         node_id: T, 
@@ -92,6 +100,18 @@ pub trait ModdableHandleGraph {
     
     /// given an Edge, this function will replace the left, or the right NodeId
     /// it can even replace the right and left Nodes
+    /// # Example
+    /// ```ignore
+    /// let h1 = graph.create_handle(b"1", 1);
+    /// let h3 = graph.create_handle(b"3", 3);
+    /// 
+    /// if graph.modify_edge(Edge(h1, h3), Some(h1), Some(h5)){
+    ///     println!("Graph AFTER modify: {:?}", Edge(h1, h3));
+    ///     graph.print_graph();
+    /// } else {
+    ///     println!("Failed to modify {:?}", Edge(h1, h3));
+    /// }
+    /// ```
     fn modify_edge(
         &mut self, 
         old_edge: Edge, 
@@ -100,6 +120,18 @@ pub trait ModdableHandleGraph {
     ) -> bool;
 
     /// given a pathname, this function will replace the sequence of ids
+    /// # Example
+    /// ```ignore
+    /// let h1 = graph.create_handle(b"1", 1);
+    /// let h3 = graph.create_handle(b"3", 3);
+    /// 
+    /// if graph.modify_handle(b"14", vec![h1, h3]){
+    ///     println!("Graph AFTER modify path");
+    ///     graph.print_graph();
+    /// } else {
+    ///     println!("Failed to modify path");
+    /// }
+    /// ```
     fn modify_path(
         &mut self,
         path_name: &[u8],

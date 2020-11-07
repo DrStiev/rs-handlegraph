@@ -59,9 +59,6 @@ impl HashGraph {
         Default::default()
     }
 
-    // TODO: add remove_segment, remove_link and remove_path
-    // TODO: add modify_segment, modify_link and modify_path
-
     fn add_gfa2_segment<'a, 'b, T: OptFields>(
         &'a mut self,
         seg: &'b Segment<usize, T>,
@@ -321,6 +318,58 @@ impl HashGraph {
             }
         }
         println!();
+    }
+
+    /// Print an HashGraph object in a simplified way
+    pub fn print_graph(&self) {
+        use bstr::BString;
+
+        println!("Graph : {{");
+        // get all the nodeid and sequence associated with them
+        for handle in self.all_handles() {
+            let node_id: String = handle.id().to_string();
+            let sequence: BString = self.sequence_iter(handle.forward()).collect();
+    
+            println!("\t{} [sequence = {}]", node_id, sequence);
+        }
+        println!();
+        // get all the link (edge) between nodes
+        for edge in self.all_edges() {
+            let GraphEdge(left, right) = edge;
+    
+            let from_node: String = if !left.id().to_string().is_empty(){
+                left.id().to_string()
+            } else {
+                "NUL".to_string()
+            };
+            let to_node: String = if !right.id().to_string().is_empty(){
+                right.id().to_string()
+            } else {
+                "NUL".to_string()
+            };
+    
+            println!("\t{} --> {}", from_node, to_node);
+        }
+        println!();
+        // get all the path
+        for path_id in self.paths_iter() {
+            let path = self.paths.get(&path_id).unwrap();
+            let mut first: bool = true;
+    
+            for (ix, handle) in path.nodes.iter().enumerate() {
+                let node = self.get_node(&handle.id()).unwrap();
+                if first {
+                    first = false;
+                    print!("\t");
+                }
+                if ix != 0 {
+                    print!(" -> ");
+                }
+                print!("{}", node.sequence);
+            }
+            println!();
+        }
+        println!("}}");  
     }
 
     pub fn print_occurrences(&self) {
