@@ -1,4 +1,5 @@
 use crate::handle::{Edge, Handle, NodeId};
+use crate::hashgraph::Path;
 use crate::handlegraph::{HandleGraph, HandleGraphRef};
 
 pub trait SubtractiveHandleGraph {
@@ -82,18 +83,28 @@ pub trait ModdableHandleGraph {
     fn apply_orientation(&mut self, handle: Handle) -> Handle;
     */
 
+    /// given a node, this function will replace the sequence associated to the NodeId
     fn modify_handle<T: Into<NodeId>>(
         &mut self, 
         node_id: T, 
         seq: &[u8]
-    ) -> Handle;
+    ) -> bool;
     
-    fn modify_edge<T: Into<NodeId>>(
+    /// given an Edge, this function will replace the left, or the right NodeId
+    /// it can even replace the right and left Nodes
+    fn modify_edge(
         &mut self, 
-        edge: Edge, 
-        left_node_id: Option<T>, 
-        right_node_id: Option<T>
-    );
+        old_edge: Edge, 
+        left_node: Option<Handle>, 
+        right_node: Option<Handle>,
+    ) -> bool;
+
+    /// given a pathname, this function will replace the sequence of ids
+    fn modify_path(
+        &mut self,
+        path_name: &[u8],
+        sequence_of_id: Vec<Handle>,
+    ) -> bool;
 }
 
 /// Trait encapsulating the mutable aspects of a handlegraph

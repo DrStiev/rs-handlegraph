@@ -134,25 +134,6 @@ fn remove_node_from_graph() {
 
     if let Some(gfa) = gfa {
         let mut graph = HashGraph::from_gfa2(&gfa);
-        let mut node_ids: Vec<_> = graph.graph.keys().collect();
-        node_ids.sort();
-    
-        println!("Graph before removing node 12: ");
-        println!("Nodes & edges");
-        for id in node_ids.iter() {
-            let node = graph.graph.get(id).unwrap();
-            
-            let seq: &BStr = node.sequence.as_ref();
-            println!("  id: {:2} sequence: {}", u64::from(**id), seq);
-            let lefts: Vec<_> =
-                node.left_edges.iter().map(|x| u64::from(x.id())).collect();
-            println!("  Left edges id:  {:?}", lefts);
-            let rights: Vec<_> =
-                node.right_edges.iter().map(|x| u64::from(x.id())).collect();
-            println!("  Right edges id: {:?}", rights);
-        }
-
-        println!();
 
         let remove_id: NodeId = 12.into();
         if graph.remove_handle(remove_id) {
@@ -185,47 +166,26 @@ fn remove_node_from_graph() {
 #[test]
 fn remove_edge_from_graph() {
     use bstr::BStr;
-    use gfa2::gfa2::GFA2;
-    use gfa2::parser_gfa2::GFA2Parser;
+    use gfa2::{
+        gfa2::GFA2,
+        parser_gfa2::GFA2Parser, 
+        gfa2::orientation::Orientation,
+    };
 
     let parser = GFA2Parser::new();
     let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
 
     if let Some(gfa) = gfa {
         let mut graph = HashGraph::from_gfa2(&gfa);
-        let mut node_ids: Vec<_> = graph.graph.keys().collect();
-        node_ids.sort();
-    
-        println!("Graph before removing edge: ");
-        println!("Nodes & edges");
-        for id in node_ids.iter() {
-            let node = graph.graph.get(id).unwrap();
-            
-            let seq: &BStr = node.sequence.as_ref();
-            println!("  id: {:2} sequence: {}", u64::from(**id), seq);
-            let lefts: Vec<_> =
-                node.left_edges.iter().map(|x| u64::from(x.id())).collect();
-            println!("  Left edges id:  {:?}", lefts);
-            let rights: Vec<_> =
-                node.right_edges.iter().map(|x| u64::from(x.id())).collect();
-            println!("  Right edges id: {:?}", rights);
-        }
-        
-        println!();
 
-        let mut graph1 = HashGraph::new();
-        let h1 = graph1.create_handle(b"ACCTT", 11);
-        let h3 = graph1.create_handle(b"CTTGATT", 13);
-        // TODO: why this node it's not recognized whien used as edge? 
-        //let h3 = graph1.create_handle(b"TCAAGG", 12);
-        
-        graph1.create_edge(Edge(h1, h3));
-
-        if graph.remove_edge(Edge(h1, h3)){
+        let left = Handle::new(11, Orientation::Forward); 
+        let right = Handle::new(13, Orientation::Forward);
+ 
+        if graph.remove_edge(Edge(left, right)){
             let mut node_ids: Vec<_> = graph.graph.keys().collect();
             node_ids.sort();
         
-            println!("Graph after removing {:?}: ", Edge(h1, h3));
+            println!("Graph after removing {:?}: ", Edge(left, right));
             println!("Nodes & edges");
             for id in node_ids.iter() {
                 let node = graph.graph.get(id).unwrap();
@@ -240,9 +200,8 @@ fn remove_edge_from_graph() {
                 println!("  Right edges id: {:?}", rights);
             }
             graph.print_path(&0);
-            //graph.print_path(&1);
         } else {
-            println!("Failed to remove {:?}", Edge(h1, h3));
+            println!("Failed to remove {:?}", Edge(left, right));
         }
     } else {
         panic!("Couldn't parse test GFA file!");
@@ -260,16 +219,6 @@ fn remove_path_from_graph() {
 
     if let Some(gfa) = gfa {
         let mut graph = HashGraph::from_gfa2(&gfa);
-        println!("Graph before removing path: ");
-        let mut x :i64 = 0;
-        while !graph.get_path(&x).is_none() {
-            // ACCTT -> TCAAGG -> CTTGATT
-            graph.print_path(&x);
-            x +=1;
-        }
-            
-        println!();
-
         if graph.remove_path(&BString::from(15.to_string())) {
             println!("Graph after removing path: ");
             let mut x :i64 = 0;
@@ -288,7 +237,6 @@ fn remove_path_from_graph() {
 
 #[test]
 fn clear_graph() {
-    use bstr::BStr;
     use gfa2::gfa2::GFA2;
     use gfa2::parser_gfa2::GFA2Parser;
 
@@ -301,6 +249,166 @@ fn clear_graph() {
         println!("Graph cleared!\n{:#?}", graph);
     } else {
         panic!("Erro with the GFA file!");
+    }
+}
+
+#[test]
+fn modify_node_from_graph() {
+    use bstr::BStr;
+    use gfa2::gfa2::GFA2;
+    use gfa2::parser_gfa2::GFA2Parser;
+
+    let parser = GFA2Parser::new();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
+
+    if let Some(gfa) = gfa {
+        let mut graph = HashGraph::from_gfa2(&gfa);
+    
+        let modify_id: NodeId = 12.into();
+        let modify_seq: &[u8] = b"TEST_SEQUENCE";
+        if graph.modify_handle(modify_id, modify_seq) {
+            let mut node_ids: Vec<_> = graph.graph.keys().collect();
+            node_ids.sort();
+        
+            println!("Graph after modify node 12: ");
+            println!("Nodes & edges");
+            for id in node_ids.iter() {
+                let node = graph.graph.get(id).unwrap();
+                
+                let seq: &BStr = node.sequence.as_ref();
+                println!("  id: {:2} sequence: {}", u64::from(**id), seq);
+                let lefts: Vec<_> =
+                    node.left_edges.iter().map(|x| u64::from(x.id())).collect();
+                println!("  Left edges id:  {:?}", lefts);
+                let rights: Vec<_> =
+                    node.right_edges.iter().map(|x| u64::from(x.id())).collect();
+                println!("  Right edges id: {:?}", rights);
+            }
+            graph.print_path(&0);
+            graph.print_path(&1);
+        }else {
+            println!("Failed to update node 12");
+        }
+    } else {
+        panic!("Couldn't parse test GFA file!");
+    }
+}
+
+#[test]
+fn modify_edge_from_graph() {
+    use bstr::BStr;
+    use gfa2::gfa2::GFA2;
+    use gfa2::parser_gfa2::GFA2Parser;
+    use gfa2::gfa2::orientation::Orientation;
+
+    let parser = GFA2Parser::new();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
+
+    if let Some(gfa) = gfa {
+        let mut graph = HashGraph::from_gfa2(&gfa);
+    
+        let left = Handle::new(11, Orientation::Forward); 
+        let right = Handle::new(13, Orientation::Forward);
+
+        let l = Handle::new(11, Orientation::Forward); 
+        let r = Handle::new(11, Orientation::Forward);
+
+        if graph.modify_edge(Edge(left, right), Some(l), Some(r)) {
+            let mut node_ids: Vec<_> = graph.graph.keys().collect();
+            node_ids.sort();
+        
+            println!("Graph after modify edge: ");
+            println!("Nodes & edges");
+            for id in node_ids.iter() {
+                let node = graph.graph.get(id).unwrap();
+                
+                let seq: &BStr = node.sequence.as_ref();
+                println!("  id: {:2} sequence: {}", u64::from(**id), seq);
+                let lefts: Vec<_> =
+                    node.left_edges.iter().map(|x| u64::from(x.id())).collect();
+                println!("  Left edges id:  {:?}", lefts);
+                let rights: Vec<_> =
+                    node.right_edges.iter().map(|x| u64::from(x.id())).collect();
+                println!("  Right edges id: {:?}", rights);
+            }
+            graph.print_path(&0);
+            graph.print_path(&1);
+        }else {
+            println!("Failed to update edge");
+        }
+    } else {
+        panic!("Couldn't parse test GFA file!");
+    }
+}
+
+#[test]
+fn modify_path_from_graph() {
+    use bstr::BStr;
+    use gfa2::gfa2::GFA2;
+    use gfa2::parser_gfa2::GFA2Parser;
+    use gfa2::gfa2::orientation::Orientation;
+
+    let parser = GFA2Parser::new();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
+
+    if let Some(gfa) = gfa {
+        let mut graph = HashGraph::from_gfa2(&gfa);
+    
+        let left = Handle::new(11, Orientation::Forward); 
+        let right = Handle::new(13, Orientation::Forward);
+
+        let l = Handle::new(11, Orientation::Forward); 
+        let r = Handle::new(11, Orientation::Forward);
+
+        if graph.modify_edge(Edge(left, right), Some(l), Some(r)) {
+            let mut node_ids: Vec<_> = graph.graph.keys().collect();
+            node_ids.sort();
+        
+            println!("Graph after modify edge: ");
+            println!("Nodes & edges");
+            for id in node_ids.iter() {
+                let node = graph.graph.get(id).unwrap();
+                
+                let seq: &BStr = node.sequence.as_ref();
+                println!("  id: {:2} sequence: {}", u64::from(**id), seq);
+                let lefts: Vec<_> =
+                    node.left_edges.iter().map(|x| u64::from(x.id())).collect();
+                println!("  Left edges id:  {:?}", lefts);
+                let rights: Vec<_> =
+                    node.right_edges.iter().map(|x| u64::from(x.id())).collect();
+                println!("  Right edges id: {:?}", rights);
+            }
+            //let bigger path = "11+ 11+ 12+ 13+";
+            let path_handles: Vec<Handle> = vec![
+                Handle::new(11, Orientation::Forward),
+                Handle::new(11, Orientation::Forward),
+                Handle::new(12, Orientation::Forward),
+                Handle::new(13, Orientation::Forward),
+            ];
+            if graph.modify_path(b"14", path_handles) {
+                graph.print_path(&0);
+                graph.print_path(&1);
+            } else {
+                println!("Failed to update path");
+            }
+
+            //let smaller path = "11+ 12-";
+            let path_handles: Vec<Handle> = vec![
+                Handle::new(11, Orientation::Forward),
+                Handle::new(12, Orientation::Backward),
+            ];
+
+            if graph.modify_path(b"14", path_handles) {
+                graph.print_path(&0);
+                graph.print_path(&1);
+            } else {
+                println!("Failed to update path");
+            }
+        }else {
+            println!("Failed to update edge");
+        }
+    } else {
+        panic!("Couldn't parse test GFA file!");
     }
 }
 

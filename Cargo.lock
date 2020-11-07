@@ -304,7 +304,7 @@ dependencies = [
 [[package]]
 name = "gfa2"
 version = "0.9.9"
-source = "git+https://github.com/DrStiev/rs-gfa2#23b10e87b6805ce85864a639e0da8f3fd8d8aaea"
+source = "git+https://github.com/DrStiev/rs-gfa2#88a763b05bf758c30fef121c224f4adc4fd0764b"
 dependencies = [
  "bstr",
  "bytemuck",
@@ -318,7 +318,7 @@ dependencies = [
 
 [[package]]
 name = "handlegraph2"
-version = "0.7.4"
+version = "0.8.9"
 dependencies = [
  "bio",
  "bstr",

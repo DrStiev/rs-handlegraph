@@ -120,34 +120,121 @@ impl<'a> HandleGraphRef for &'a HashGraph {
 }
 
 // TODO: add ModdableHandleGraph trait
-/*
 impl ModdableHandleGraph for HashGraph {
     fn modify_handle<T: Into<NodeId>>(
         &mut self,
         node_id: T, 
-        seq: &[u8]
-    ) -> Handle {
-        let node = 
-            self
-            .graph
-            .get(&node_id.into())
-            .expect("Node doesn't exist for the given Id");
-        
-        if seq.is_empty() {
-            panic!("Tried to add empty handle!");
+        seq: &[u8],
+    ) -> bool {
+        let node_id: NodeId = node_id.into();
+        let seq: BString = BString::from(seq);
+        if !self.graph.get_mut(&node_id).is_none() {
+            if self.graph.get_mut(&node_id).unwrap().sequence == seq {
+                // no need to update
+                return true;
+            } else {
+                // update the sequence value of node
+                *self.graph.get_mut(&node_id).unwrap().sequence = seq.to_vec();
+                return true;
+            }
         } else {
-            self.graph.update(node.id);
+            false
         }
     }
 
-    fn modify_edge<T: Into<NodeId>>(
+    fn modify_edge(
         &mut self,
-        edge: Edge, 
-        left_node_id: Option<T>, 
-        right_node_id: Option<T>
-    ){}
+        old_edge: Edge, 
+        left_node: Option<Handle>, 
+        right_node: Option<Handle>,
+    ) -> bool {
+        let Edge(left, right) = old_edge;
+        let left_node = left_node.unwrap_or(left);
+        let right_node = right_node.unwrap_or(right);
+        if self.has_edge(left, right) || self.has_edge(right, left) {
+            if old_edge == Edge(left_node, right_node) {
+                // no need to update
+                return true;
+            } else if left != left_node && right != right_node {
+                // update Edge
+                for handle in self.clone().graph.keys() {
+                    if let Some(left_index) = self.graph.get_mut(&handle).unwrap().left_edges.iter().position(|x| x.id() == left.id()) {
+                        *self.graph.get_mut(&handle).unwrap().left_edges.get_mut(left_index).unwrap() = left_node;
+                    }
+                    if let Some(right_index) = self.graph.get_mut(&handle).unwrap().right_edges.iter().position(|x| x.id() == right.id()) {
+                        *self.graph.get_mut(&handle).unwrap().right_edges.get_mut(right_index).unwrap() = right_node;
+                    }
+                }
+            } else if left != left_node {
+                // update the left part of Edge
+                for handle in self.clone().graph.keys() {
+                    if let Some(left_index) = self.graph.get_mut(&handle).unwrap().left_edges.iter().position(|x| x.id() == left.id()) {
+                        *self.graph.get_mut(&handle).unwrap().left_edges.get_mut(left_index).unwrap() = left_node;
+                    }
+                }
+            } else /*if right != right_node*/ {
+                // update the right part of Edge
+                for handle in self.clone().graph.keys() {
+                    if let Some(right_index) = self.graph.get_mut(&handle).unwrap().right_edges.iter().position(|x| x.id() == right.id()) {
+                        *self.graph.get_mut(&handle).unwrap().right_edges.get_mut(right_index).unwrap() = right_node;
+                    }
+                }
+            } 
+            // update occurrencies of nodeid in path
+            let mut x :i64 = 0;
+            while !self.get_path(&x).is_none() {
+                let nodes = &self.paths.get_mut(&x).unwrap().nodes;
+                if let Some(l) = nodes.iter().position(|x| x.id() == left.id()) {
+                    if let Some(r) = nodes.iter().position(|x| x.id() == right.id()) {
+                        let lr = l + 1;
+                        if lr == r {
+                            *self.paths.get_mut(&x).unwrap().nodes.get_mut(l).unwrap() = left_node;
+                            *self.paths.get_mut(&x).unwrap().nodes.get_mut(r).unwrap() = right_node;
+                        }
+                    }
+                }
+                x +=1;
+            }
+            true
+        } else {
+            false
+        }  
+    }
+
+    fn modify_path(
+        &mut self,
+        path_name: &[u8],
+        sequence_of_id: Vec<Handle>,
+    ) -> bool {
+        if self.has_path(path_name) {
+            // update occurrencies in path
+            let path_handle = self.name_to_path_handle(path_name).unwrap();
+            let len: usize = sequence_of_id.len();
+            let old_len: usize = self.paths.get_mut(&path_handle).unwrap().nodes.len();
+            let mut x: usize = 0;
+            while x < len {
+                if self.paths.get_mut(&path_handle).unwrap().nodes.get_mut(x).is_none() {
+                    // if the old_path it's smaller than the new one, insert the "new nodes"
+                    self.paths.get_mut(&path_handle).unwrap().nodes.push(sequence_of_id[x]);
+                }
+                *self.paths.get_mut(&path_handle).unwrap().nodes.get_mut(x).unwrap() = sequence_of_id[x];
+                x +=1;
+            }
+            if old_len > len {
+                let diff: usize = old_len - len;
+                let mut x: usize = 0;
+                while x < diff {
+                    // if the old_path it's bigger than the new one, remove the "excess nodes"
+                    self.paths.get_mut(&path_handle).unwrap().nodes.pop();
+                    x += 1;
+                }
+            }
+            true
+        } else {
+            false
+        }
+    }
 }
-*/
 
 impl SubtractiveHandleGraph for HashGraph {
     fn remove_handle<T: Into<NodeId>>(&mut self, node: T) -> bool {
@@ -174,50 +261,35 @@ impl SubtractiveHandleGraph for HashGraph {
         }
     }
 
+    // works better but still in a strange way
+    // so for now it's better to avoid backward orientation for handles
     fn remove_edge(&mut self, edge: Edge) -> bool {
         let Edge(left, right) = edge;
         if self.has_edge(left, right) || self.has_edge(right, left) {
-            let mut find_left: bool = false;
-            let mut find_right: bool = false;
+            // delete all the occurrencies of edge found in graph
             for handle in self.clone().graph.keys() {
                 if let Some(left_index) = self.graph.get_mut(&handle).unwrap().left_edges.iter().position(|x| x.id() == left.id()) {
-                    find_left = true;
                     self.graph.get_mut(&handle).unwrap().left_edges.remove(left_index);
                 }
                 if let Some(right_index) = self.graph.get_mut(&handle).unwrap().right_edges.iter().position(|x| x.id() == right.id()) {
-                    find_right = true;
                     self.graph.get_mut(&handle).unwrap().right_edges.remove(right_index);
                 }
-                if find_left && find_right {
-                    break;
-                }
             }
-            if !find_left && !find_right {
-                return false;
-            } else {
-                // delete occurrencies of nodeid in path but leaves "holes" in it
-                let mut x :i64 = 0;
-                let mut find: bool = false;
-                while !self.get_path(&x).is_none() {
-                    let nodes = &self.paths.get_mut(&x).unwrap().nodes;
-                    if let Some(l) = nodes.iter().position(|x| x.id() == left.id()) {
-                        if let Some(r) = nodes.iter().position(|x| x.id() == right.id()) {
-                            let lr = l + 1;
-                            if lr == r {
-                                find = true;
-                                self.print_path(&x);
-                                self.paths.remove(&x);
-                            }
+            // delete occurrencies of nodeid in path but leaves "holes" in it
+            let mut x :i64 = 0;
+            while !self.get_path(&x).is_none() {
+                let nodes = &self.paths.get_mut(&x).unwrap().nodes;
+                if let Some(l) = nodes.iter().position(|x| x.id() == left.id()) {
+                    if let Some(r) = nodes.iter().position(|x| x.id() == right.id()) {
+                        let lr = l + 1;
+                        if lr == r {
+                            self.paths.remove(&x);
                         }
                     }
-                    x +=1;
                 }
-                if find {
-                    return true;
-                } else {
-                    return false;
-                }
+                x +=1;
             }
+            true
         } else {
             false
         }   
