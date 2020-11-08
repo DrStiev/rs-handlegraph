@@ -1,15 +1,8 @@
 use fnv::FnvHashMap;
 
 use gfa2::{
-    gfa2::{
-        Edge, 
-        Segment, 
-        GroupO, 
-        GroupU, 
-        GFA2, 
-        orientation::Orientation,
-    },
     gfa1::{Link, Segment as Segment1, GFA},
+    gfa2::{orientation::Orientation, Edge, GroupO, GroupU, Segment, GFA2},
     tag::OptFields,
 };
 
@@ -59,32 +52,29 @@ impl HashGraph {
         Default::default()
     }
 
-    fn add_gfa2_segment<'a, 'b, T: OptFields>(
-        &'a mut self,
-        seg: &'b Segment<usize, T>,
-    ) {
+    fn add_gfa2_segment<'a, 'b, T: OptFields>(&'a mut self, seg: &'b Segment<usize, T>) {
         self.create_handle(&seg.sequence, seg.id as u64);
     }
 
-    // TODO: handle reverse and complement 
+    // TODO: handle reverse and complement
     fn add_gfa_edge<T: OptFields>(&mut self, link: &Edge<usize, T>) {
         let left_len = link.sid1.to_string().len();
         let right_len = link.sid2.to_string().len();
 
-        let left_id: String = link.sid1.to_string()[..left_len-1].to_string();
-        let right_id: String = link.sid2.to_string()[..right_len-1].to_string();
+        let left_id: String = link.sid1.to_string()[..left_len - 1].to_string();
+        let right_id: String = link.sid2.to_string()[..right_len - 1].to_string();
 
-        let left_orient = match &link.sid1.to_string()[left_len-1..] {
+        let left_orient = match &link.sid1.to_string()[left_len - 1..] {
             "0" => Orientation::Forward,
             "1" => Orientation::Backward,
             _ => panic!("Error! Edge did not include orientation"),
         };
-        let right_orient = match &link.sid2.to_string()[right_len-1..] {
+        let right_orient = match &link.sid2.to_string()[right_len - 1..] {
             "0" => Orientation::Forward,
             "1" => Orientation::Backward,
             _ => panic!("Error! Edge did not include orientation"),
         };
-        
+
         let left = Handle::new(left_id.parse::<u64>().unwrap() as u64, left_orient);
         let right = Handle::new(right_id.parse::<u64>().unwrap() as u64, right_orient);
         self.create_edge(GraphEdge(left, right));
@@ -97,9 +87,9 @@ impl HashGraph {
         }
     }
 
-    // the U-Group encodes a subgraph and all the segments id that are 
+    // the U-Group encodes a subgraph and all the segments id that are
     // presents in the var_field section do not have an orientation!
-    // by default we should consider to have Forward (+) orientation? 
+    // by default we should consider to have Forward (+) orientation?
     fn add_gfa_path_u<T: OptFields>(&mut self, path: &GroupU<usize, T>) {
         let path_id = self.create_path_handle(&path.id, false);
         for name in path.iter() {
@@ -113,7 +103,7 @@ impl HashGraph {
     /// use bstr::BStr;
     /// use gfa2::gfa2::GFA2;
     /// use gfa2::parser_gfa2::GFA2Parser;
-    /// 
+    ///
     /// let parser = GFA2Parser::new();
     /// let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
     ///
@@ -123,7 +113,7 @@ impl HashGraph {
     /// } else {
     ///     panic!("Couldn't parse test GFA file!");
     /// }
-    /// 
+    ///
     /// /*
     /// HashGraph {
     /// max_id: NodeId(13),
@@ -204,20 +194,25 @@ impl HashGraph {
 
         let mut graph = Self::new();
         //println!("Segments");
-        gfa.segments.iter()/*.progress_with(pb_seg)*/.for_each(|s| graph.add_gfa2_segment(s));
+        gfa.segments
+            .iter() /*.progress_with(pb_seg)*/
+            .for_each(|s| graph.add_gfa2_segment(s));
         //println!("Edges");
-        gfa.edges.iter()/*.progress_with(pb_link)*/.for_each(|l| graph.add_gfa_edge(l));
+        gfa.edges
+            .iter() /*.progress_with(pb_link)*/
+            .for_each(|l| graph.add_gfa_edge(l));
         //println!("O-Groups");
-        gfa.groups_o.iter()/*.progress_with(pb_patho)*/.for_each(|o| graph.add_gfa_path_o(o));
+        gfa.groups_o
+            .iter() /*.progress_with(pb_patho)*/
+            .for_each(|o| graph.add_gfa_path_o(o));
         //println!("U-Groups");
-        gfa.groups_u.iter()/*.progress_with(pb_pathu)*/.for_each(|u| graph.add_gfa_path_u(u));
+        gfa.groups_u
+            .iter() /*.progress_with(pb_pathu)*/
+            .for_each(|u| graph.add_gfa_path_u(u));
         graph
     }
 
-    fn add_gfa_segment<'a, 'b, T: OptFields>(
-        &'a mut self,
-        seg: &'b Segment1<usize, T>,
-    ) {
+    fn add_gfa_segment<'a, 'b, T: OptFields>(&'a mut self, seg: &'b Segment1<usize, T>) {
         self.create_handle(&seg.sequence, seg.name as u64);
     }
 
@@ -247,7 +242,7 @@ impl HashGraph {
     /// } else {
     ///     panic!("Couldn't parse test GFA file!");
     /// }
-    /// 
+    ///
     /// /*
     /// HashGraph {
     /// max_id: NodeId(13),
@@ -323,44 +318,50 @@ impl HashGraph {
 
         let mut graph = Self::new();
         //println!("Segments");
-        gfa.segments.iter()/*.progress_with(pb_seg)*/.for_each(|s| graph.add_gfa_segment(s));
+        gfa.segments
+            .iter() /*.progress_with(pb_seg)*/
+            .for_each(|s| graph.add_gfa_segment(s));
         //println!("Links");
-        gfa.links.iter()/*.progress_with(pb_link)*/.for_each(|l| graph.add_gfa_link(l));
+        gfa.links
+            .iter() /*.progress_with(pb_link)*/
+            .for_each(|l| graph.add_gfa_link(l));
         //println!("Paths");
-        gfa.paths.iter()/*.progress_with(pb_path)*/.for_each(|p| graph.add_gfa_path(p));
+        gfa.paths
+            .iter() /*.progress_with(pb_path)*/
+            .for_each(|p| graph.add_gfa_path(p));
         graph
     }
 
-    /// Function that print all the sequence associated to the segment ids 
+    /// Function that print all the sequence associated to the segment ids
     /// found in a certain path
     /// # Examples
     /// ```ignore
     /// use hashgraph::HashGraph::graph;
     /// use bstr::BStr;
-    /// 
+    ///
     /// let mut graph = HashGraph::new();
     /// let h1 = graph.create_handle(b"ACCTT", 11);
     /// let h2 = graph.create_handle(b"TCAAGG", 12);
     /// let h3 = graph.create_handle(b"CTTGATT", 13);
-    /// 
+    ///
     /// let p1 = graph.create_path_handle(b"path-1", false);
     /// graph.append_step(&p1, h1);
     /// graph.append_step(&p1, h2);
     /// graph.append_step(&p1, h3);
-    /// 
+    ///
     /// let mut x :i64 = 0;
     /// while !graph.get_path(&x).is_none() {
     ///     // ACCTT -> TCAAGG -> CTTGATT
     ///     graph.print_path(&x);
     ///     x +=1;
-    /// } 
+    /// }
     /// ```
     pub fn print_path(&self, path_id: &PathId) {
         let path = self.paths.get(&path_id).unwrap();
         println!("Path\t{}", path_id);
         for (ix, handle) in path.nodes.iter().enumerate() {
             let node = self.get_node(&handle.id());
-            if !node.is_none() {
+            if node.is_some() {
                 if ix != 0 {
                     print!(" -> ");
                 }
@@ -381,25 +382,25 @@ impl HashGraph {
         for handle in self.all_handles() {
             let node_id: String = handle.id().to_string();
             let sequence: BString = self.sequence_iter(handle.forward()).collect();
-    
+
             println!("\t{} [sequence = {}]", node_id, sequence);
         }
         println!();
         // get all the link (edge) between nodes
         for edge in self.all_edges() {
             let GraphEdge(left, right) = edge;
-    
-            let from_node: String = if !left.id().to_string().is_empty(){
+
+            let from_node: String = if !left.id().to_string().is_empty() {
                 left.id().to_string()
             } else {
                 "NUL".to_string()
             };
-            let to_node: String = if !right.id().to_string().is_empty(){
+            let to_node: String = if !right.id().to_string().is_empty() {
                 right.id().to_string()
             } else {
                 "NUL".to_string()
             };
-    
+
             println!("\t{} --> {}", from_node, to_node);
         }
         println!();
@@ -407,7 +408,7 @@ impl HashGraph {
         for path_id in self.paths_iter() {
             let path = self.paths.get(&path_id).unwrap();
             let mut first: bool = true;
-    
+
             for (ix, handle) in path.nodes.iter().enumerate() {
                 let node = self.get_node(&handle.id()).unwrap();
                 if first {
@@ -421,7 +422,7 @@ impl HashGraph {
             }
             println!();
         }
-        println!("}}");  
+        println!("}}");
     }
 
     pub fn print_occurrences(&self) {
@@ -437,21 +438,21 @@ impl HashGraph {
     /// ```ignore
     /// use hashgraph::HashGraph::graph;
     /// use bstr::BStr;
-    /// 
+    ///
     /// let mut graph = HashGraph::new();
     /// let h1 = graph.create_handle(b"ACCTT", 11);
-    /// 
+    ///
     /// // Some(Node { sequence: "ACCTT", left_edges: [], right_edges: [], occurrences: {} })
-    /// println!("{:?}", graph.get_node(&11)); 
+    /// println!("{:?}", graph.get_node(&11));
     /// ```
     pub fn get_node(&self, node_id: &NodeId) -> Option<&Node> {
         self.graph.get(node_id)
     }
 
     pub fn get_node_unchecked(&self, node_id: &NodeId) -> &Node {
-        self.graph.get(node_id).unwrap_or_else(|| {
-            panic!("Tried getting a node that doesn't exist, ID: {:?}", node_id)
-        })
+        self.graph
+            .get(node_id)
+            .unwrap_or_else(|| panic!("Tried getting a node that doesn't exist, ID: {:?}", node_id))
     }
 
     pub fn get_node_mut(&mut self, node_id: &NodeId) -> Option<&mut Node> {
@@ -464,17 +465,17 @@ impl HashGraph {
     /// ```ignore
     /// use hashgraph::HashGraph::graph;
     /// use bstr::BStr;
-    /// 
+    ///
     /// let mut graph = HashGraph::new();
     /// let h1 = graph.create_handle(b"ACCTT", 11);
     /// let h2 = graph.create_handle(b"TCAAGG", 12);
-    /// 
+    ///
     /// let p1 = graph.create_path_handle(b"path-1", false);
     /// graph.append_step(&p1, h1);
     /// graph.append_step(&p1, h2);
-    /// 
+    ///
     /// // Some(Path { path_id: 0, name: "path-1", is_circular: false, nodes: [Handle(22), Handle(24)] })
-    /// println!("{:?}", graph.get_path(&0)); 
+    /// println!("{:?}", graph.get_path(&0));
     /// ```
     pub fn get_path(&self, path_id: &PathId) -> Option<&Path> {
         self.paths.get(path_id)

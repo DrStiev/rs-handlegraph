@@ -5,29 +5,14 @@ use crate::{
     pathgraph::PathHandleGraph,
 };
 
-use gfa2::{
-    gfa2::{
-        Line, 
-        GFA2, 
-        Header, 
-        Segment, 
-        Edge as GFA2Edge, 
-        GroupO, 
-        orientation::Orientation
-    },
-    gfa1::{
-        Header as Header1,
-        Link, 
-        Segment as Segment1,
-        Path, 
-        GFA,
-        Line as Line1,
-    },
-    tag::OptFields,
-    parser_gfa2::GFA2Result,
-    parser_gfa1::GFAResult,
-};
 use bstr::BString;
+use gfa2::{
+    gfa1::{Header as Header1, Line as Line1, Link, Path, Segment as Segment1, GFA},
+    gfa2::{orientation::Orientation, Edge as GFA2Edge, GroupO, Header, Line, Segment, GFA2},
+    parser_gfa1::GFAResult,
+    parser_gfa2::GFA2Result,
+    tag::OptFields,
+};
 // use indicatif::{ProgressBar, ProgressIterator, ProgressStyle};
 
 /// Function that takes a GFA2 object as input and return a HashGraph object
@@ -36,7 +21,7 @@ use bstr::BString;
 /// use bstr::BStr;
 /// use gfa2::gfa2::GFA2;
 /// use gfa2::parser_gfa2::GFA2Parser;
-/// 
+///
 /// let parser = GFA2Parser::new();
 /// let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
 ///
@@ -46,7 +31,7 @@ use bstr::BString;
 /// } else {
 ///     panic!("Couldn't parse test GFA file!");
 /// }
-/// 
+///
 /// /*
 /// HashGraph {
 /// max_id: NodeId(13),
@@ -115,19 +100,19 @@ where
     for link in gfa2.edges.iter() {
         let left_len = link.sid1.to_string().len();
         let right_len = link.sid2.to_string().len();
-        let left_orient = match &link.sid1.to_string()[left_len-1..] {
+        let left_orient = match &link.sid1.to_string()[left_len - 1..] {
             "0" => Orientation::Forward,
             "1" => Orientation::Backward,
             _ => panic!("Error! Edge did not include orientation"),
         };
-        let right_orient = match &link.sid2.to_string()[right_len-1..] {
+        let right_orient = match &link.sid2.to_string()[right_len - 1..] {
             "0" => Orientation::Forward,
             "1" => Orientation::Backward,
             _ => panic!("Error! Edge did not include orientation"),
         };
-        let left_id = &link.sid1.to_string()[..left_len-1];
-        let right_id = &link.sid2.to_string()[..right_len-1];
-        
+        let left_id = &link.sid1.to_string()[..left_len - 1];
+        let right_id = &link.sid2.to_string()[..right_len - 1];
+
         let left = Handle::new(left_id.parse::<u64>().unwrap() as u64, left_orient);
         let right = Handle::new(right_id.parse::<u64>().unwrap() as u64, right_orient);
 
@@ -143,9 +128,9 @@ where
         }
     }
 
-    // the U-Group encodes a subgraph and all the segments id that are 
+    // the U-Group encodes a subgraph and all the segments id that are
     // presents in the var_field section do not have orientation!
-    // by default we should consider to have Forward (+) orientation? 
+    // by default we should consider to have Forward (+) orientation?
     for path in gfa2.groups_u.iter() {
         let name = &path.id;
         let path_id = graph.create_path_handle(name, false);
@@ -174,19 +159,19 @@ where
             Line::Edge(v) => {
                 let left_len = v.sid1.to_string().len();
                 let right_len = v.sid2.to_string().len();
-                let left_orient = match &v.sid1.to_string()[left_len-1..] {
+                let left_orient = match &v.sid1.to_string()[left_len - 1..] {
                     "0" => Orientation::Forward,
                     "1" => Orientation::Backward,
                     _ => panic!("Error! Edge did not include orientation"),
                 };
-                let right_orient = match &v.sid2.to_string()[right_len-1..] {
+                let right_orient = match &v.sid2.to_string()[right_len - 1..] {
                     "0" => Orientation::Forward,
                     "1" => Orientation::Backward,
                     _ => panic!("Error! Edge did not include orientation"),
                 };
-                let left_id = &v.sid1.to_string()[..left_len-1];
-                let right_id = &v.sid2.to_string()[..right_len-1];
-                
+                let left_id = &v.sid1.to_string()[..left_len - 1];
+                let right_id = &v.sid2.to_string()[..right_len - 1];
+
                 let left = Handle::new(left_id.parse::<u64>().unwrap() as u64, left_orient);
                 let right = Handle::new(right_id.parse::<u64>().unwrap() as u64, right_orient);
                 graph.create_edge(Edge(left, right));
@@ -244,11 +229,11 @@ where
 /// E   *   11+ 13+ 0   0$  0   0$  0M
 /// O   14  11+ 12- 13+
 /// */
-/// 
+///
 /// /* original gfa2:
 /// H	VN:Z:2.0
-/// H	
-/// S	11	5	ACCTT	
+/// H
+/// S	11	5	ACCTT
 /// S	12	6	TCAAGG
 /// S	13	7	CTTGATT
 /// E	1	11+	12-	1	5$	2	6$	4M
@@ -278,7 +263,7 @@ pub fn to_gfa2(graph: &HashGraph) -> GFA2<BString, ()> {
     ));
     */
 
-    // I think it can be more efficient but for now it's good 
+    // I think it can be more efficient but for now it's good
     let mut file: GFA2<BString, ()> = GFA2::new();
 
     // default header
@@ -286,17 +271,19 @@ pub fn to_gfa2(graph: &HashGraph) -> GFA2<BString, ()> {
         version: Some("VN:Z:2.0".into()),
         tag: (),
     };
-    file.headers.push(header); 
+    file.headers.push(header);
 
-    for handle in graph.all_handles()/*.progress_with(pb_seg)*/ {
+    for handle in graph.all_handles()
+    /*.progress_with(pb_seg)*/
+    {
         let seq_id = BString::from(handle.id().to_string());
         let sequence: BString = graph.sequence_iter(handle.forward()).collect();
         let len: BString = BString::from(sequence.len().to_string());
 
         let segment = Segment {
-            id: seq_id, 
-            len: len, 
-            sequence: sequence,
+            id: seq_id,
+            len,
+            sequence,
             tag: (),
         };
         file.segments.push(segment);
@@ -310,7 +297,9 @@ pub fn to_gfa2(graph: &HashGraph) -> GFA2<BString, ()> {
         }
     };
 
-    for edge in graph.all_edges()/*.progress_with(pb_link)*/ {
+    for edge in graph.all_edges()
+    /*.progress_with(pb_link)*/
+    {
         let Edge(left, right) = edge;
 
         let sid1_id: String = left.id().to_string();
@@ -324,21 +313,23 @@ pub fn to_gfa2(graph: &HashGraph) -> GFA2<BString, ()> {
         let edge = GFA2Edge {
             // placeholder id
             id: "*".into(),
-            sid1: sid1, 
-            sid2: sid2, 
-            beg1:"0".into(), // placeholder value
-            end1:"0$".into(), // placeholder value
-            beg2:"0".into(), // placeholder value
-            end2:"0$".into(), // placeholder value
+            sid1,
+            sid2,
+            beg1: "0".into(),  // placeholder value
+            end1: "0$".into(), // placeholder value
+            beg2: "0".into(),  // placeholder value
+            end2: "0$".into(), // placeholder value
             alignment: "0M".into(),
             tag: (),
         };
         file.edges.push(edge);
     }
 
-    for path_id in graph.paths_iter()/*.progress_with(pb_path)*/ {
+    for path_id in graph.paths_iter()
+    /*.progress_with(pb_path)*/
+    {
         let path_name: BString = graph.path_handle_to_name(path_id).into();
-        let mut segment_names: Vec<String>= Vec::new();
+        let mut segment_names: Vec<String> = Vec::new();
 
         for step in graph.steps_iter(path_id) {
             let handle = graph.handle_of_step(&step).unwrap();
@@ -350,13 +341,13 @@ pub fn to_gfa2(graph: &HashGraph) -> GFA2<BString, ()> {
             segment_names.push(" ".to_string());
         }
 
-        let mut segment_names: String = 
-            segment_names.iter().fold(String::new(), |acc, str| acc + &str.to_string());
+        let mut segment_names: String = segment_names
+            .iter()
+            .fold(String::new(), |acc, str| acc + &str.to_string());
 
-        // remove the last whitespace " " 
+        // remove the last whitespace " "
         segment_names.pop();
-        let ogroup: GroupO<BString, _> = 
-            GroupO::new(path_name, BString::from(segment_names), ());
+        let ogroup: GroupO<BString, _> = GroupO::new(path_name, BString::from(segment_names), ());
         file.groups_o.push(ogroup);
     }
 
@@ -375,7 +366,7 @@ pub fn to_gfa2(graph: &HashGraph) -> GFA2<BString, ()> {
 /// } else {
 ///     panic!("Couldn't parse test GFA file!");
 /// }
-/// 
+///
 /// /*
 /// HashGraph {
 /// max_id: NodeId(13),
@@ -516,7 +507,7 @@ where
 /// L   11  +   13  +   0M
 /// P   14  11+ 12- 13+ 0M
 /// */
-/// 
+///
 /// /* original gfa:
 /// H   VN:Z:1.0
 /// S   13  CTTGATT
@@ -558,7 +549,9 @@ pub fn to_gfa(graph: &HashGraph) -> GFA<BString, ()> {
     };
     gfa.headers.push(header);
 
-    for handle in graph.all_handles()/*.progress_with(pb_seg)*/ {
+    for handle in graph.all_handles()
+    /*.progress_with(pb_seg)*/
+    {
         let name = BString::from(handle.id().to_string());
         let sequence: BString = graph.sequence_iter(handle.forward()).collect();
 
@@ -578,7 +571,9 @@ pub fn to_gfa(graph: &HashGraph) -> GFA<BString, ()> {
         }
     };
 
-    for edge in graph.all_edges()/*.progress_with(pb_link)*/ {
+    for edge in graph.all_edges()
+    /*.progress_with(pb_link)*/
+    {
         let Edge(left, right) = edge;
         let from_segment: BString = BString::from(left.id().to_string());
         let from_orient = orient(left.is_reverse());
@@ -598,7 +593,9 @@ pub fn to_gfa(graph: &HashGraph) -> GFA<BString, ()> {
         gfa.links.push(link);
     }
 
-    for path_id in graph.paths_iter()/*.progress_with(pb_path)*/ {
+    for path_id in graph.paths_iter()
+    /*.progress_with(pb_path)*/
+    {
         let path_name: BString = graph.path_handle_to_name(path_id).into();
         let mut segment_names: Vec<String> = Vec::new();
         for step in graph.steps_iter(path_id) {
@@ -610,10 +607,11 @@ pub fn to_gfa(graph: &HashGraph) -> GFA<BString, ()> {
             segment_names.push(orientation.to_string());
             segment_names.push(",".into());
         }
-        let mut segment_names: String =
-            segment_names.iter().fold(String::new(), |acc, str| acc + &str.to_string());
+        let mut segment_names: String = segment_names
+            .iter()
+            .fold(String::new(), |acc, str| acc + &str.to_string());
 
-        // remove the last comma "," otherwise it will produce an error 
+        // remove the last comma "," otherwise it will produce an error
         // that could break everything (overflow and other bad stuff)
         segment_names.pop();
         let path: Path<BString, ()> =

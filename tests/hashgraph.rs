@@ -95,7 +95,7 @@ fn construct_from_medium_gfa2() {
     use gfa2::parser_gfa2::GFA2Parser;
 
     println!("Parse file \"test.gfa2\"");
-    // parsing file and counting items, about 3 seconds (WITH PROGRESSBAR)
+    // parsing file, about 3 seconds (WITH PROGRESSBAR)
     let parser = GFA2Parser::new();
     let gfa2: Option<GFA2<usize, ()>> = parser.parse_file("./tests/big_files/test.gfa2").ok();
 
@@ -106,7 +106,28 @@ fn construct_from_medium_gfa2() {
         // 0 seconds for pathso -> paths
         // 0 seconds for pathsu -> paths
         println!("Create graph from GFA object");
-        let graph = HashGraph::from_gfa2(&gfa2);
+        let _graph = HashGraph::from_gfa2(&gfa2);
+    //graph.print_graph();
+    } else {
+        panic!("Couldn't parse test GFA file!");
+    }
+}
+
+#[test]
+#[ignore]
+fn construct_from_big_gfa2() {
+    use gfa2::gfa2::GFA2;
+    use gfa2::parser_gfa2::GFA2Parser;
+
+    println!("Parse file \"ape-4-0.10b.gfa2\"");
+    // parsing file, about 8 minutes (WITHOUT PROGRESSBAR)
+    let parser = GFA2Parser::new();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/big_files/ape-4-0.10b.gfa2").ok();
+
+    if let Some(gfa) = gfa {
+        println!("Create graph from GFA object");
+        // creating the graph, about 20 seconds (WITHOUT PROGRESSBAR)
+        let _graph = HashGraph::from_gfa2(&gfa);
         //graph.print_graph();
     } else {
         panic!("Couldn't parse test GFA file!");
@@ -119,7 +140,7 @@ fn construct_from_medium_gfa1() {
     use gfa2::parser_gfa1::GFAParser;
 
     println!("Parse file \"test.gfa\"");
-    // parsing file and counting items, about 3 seconds (WITH PROGRESSBAR)
+    // parsing file, about 3 seconds (WITH PROGRESSBAR)
     let parser = GFAParser::new();
     let gfa: Option<GFA<usize, ()>> = parser.parse_file("./tests/big_files/test.gfa").ok();
 
@@ -129,8 +150,8 @@ fn construct_from_medium_gfa1() {
         // 3 seconds for links -> edges
         // 0 seconds for paths -> paths
         println!("Create graph from GFA object");
-        let graph = HashGraph::from_gfa(&gfa);
-        //graph.print_graph();
+        let _graph = HashGraph::from_gfa(&gfa);
+    //graph.print_graph();
     } else {
         panic!("Couldn't parse test GFA file!");
     }
@@ -139,10 +160,7 @@ fn construct_from_medium_gfa1() {
 #[test]
 fn handlegraph_to_gfa2() {
     use bstr::BString;
-    use gfa2::{
-        gfa2::GFA2,
-        parser_gfa2::GFA2Parser,
-    };
+    use gfa2::{gfa2::GFA2, parser_gfa2::GFA2Parser};
 
     println!("Parse file");
     let parser = GFA2Parser::new();
@@ -154,19 +172,19 @@ fn handlegraph_to_gfa2() {
     // 2 seconds for links -> edges
     // 1 seconds for paths -> paths
     println!("Convert Graph to GFA");
-    let gfa_out: GFA2<BString, ()> = to_gfa2(&graph);
+    let _gfa_out: GFA2<BString, ()> = to_gfa2(&graph);
 
     /*
     println!("Original GFA2 file:\n{}", gfa_in);
-    println!("GFA2 file after graph:\n{}", gfa_out); 
+    println!("GFA2 file after graph:\n{}", gfa_out);
     */
 }
 
 #[test]
 fn handlegraph_to_gfa1() {
+    use bstr::BString;
     use gfa2::gfa1::GFA;
     use gfa2::parser_gfa1::GFAParser;
-    use bstr::BString;
 
     println!("Parse file");
     let parser = GFAParser::new();
@@ -178,7 +196,7 @@ fn handlegraph_to_gfa1() {
     // 2 seconds for links -> edges
     // 1 seconds for paths -> paths
     println!("Convert Graph to GFA");
-    let gfa_out: GFA<BString, ()> = to_gfa(&graph);
+    let _gfa_out: GFA<BString, ()> = to_gfa(&graph);
 
     /*
     println!("Original GFA1 file:\n{}", gfa_in);
@@ -202,7 +220,7 @@ fn remove_node_from_graph() {
         if graph.remove_handle(remove_id) {
             println!("Graph AFTER remove Node: {}", remove_id);
             graph.print_graph();
-        }else {
+        } else {
             println!("Failed to remove node: {}", remove_id);
         }
     } else {
@@ -213,7 +231,7 @@ fn remove_node_from_graph() {
 #[test]
 fn remove_edge_from_graph() {
     let mut graph = HashGraph::new();
-    
+
     let h1 = graph.create_handle(b"1", 1);
     let h2 = graph.create_handle(b"2", 2);
     let h3 = graph.create_handle(b"3", 3);
@@ -248,7 +266,7 @@ fn remove_edge_from_graph() {
     */
     println!("Graph BEFORE remove: {:?}", Edge(h1, h3));
     graph.print_graph();
-    if graph.remove_edge(Edge(h1, h3)){
+    if graph.remove_edge(Edge(h1, h3)) {
         println!("Graph AFTER remove: {:?}", Edge(h1, h3));
         graph.print_graph();
     } else {
@@ -310,15 +328,15 @@ fn modify_node_from_graph() {
 
     if let Some(gfa) = gfa {
         let mut graph = HashGraph::from_gfa2(&gfa);
-    
+
         let modify_id: NodeId = 12.into();
         let modify_seq: &[u8] = b"TEST_SEQUENCE";
         println!("Graph BEFORE modify node: {}", modify_id);
-            graph.print_graph();
+        graph.print_graph();
         if graph.modify_handle(modify_id, modify_seq) {
             println!("Graph AFTER modify node: {}", modify_id);
             graph.print_graph();
-        }else {
+        } else {
             println!("Failed to update node 12");
         }
     } else {
@@ -329,7 +347,7 @@ fn modify_node_from_graph() {
 #[test]
 fn modify_edge_from_graph() {
     let mut graph = HashGraph::new();
-    
+
     let h1 = graph.create_handle(b"1", 1);
     let h2 = graph.create_handle(b"2", 2);
     let h3 = graph.create_handle(b"3", 3);
@@ -352,7 +370,7 @@ fn modify_edge_from_graph() {
     graph.append_step(&p2, h1);
     graph.append_step(&p2, h6);
 
-     /*
+    /*
     println!("Graph BEFORE modify: {:?}", Edge(h1, h3));
     graph.print_graph();
     if graph.modify_edge(Edge(h1, h3), Some(h2), Some(h3)){
@@ -362,7 +380,7 @@ fn modify_edge_from_graph() {
         println!("Failed to modify {:?}", Edge(h2, h3));
     }
     */
-   
+
     /*
     println!("Graph BEFORE modify: {:?}", Edge(h1, h2));
     graph.print_graph();
@@ -376,7 +394,7 @@ fn modify_edge_from_graph() {
 
     println!("Graph BEFORE modify: {:?}", Edge(h1, h2));
     graph.print_graph();
-    if graph.modify_edge(Edge(h1, h2), Some(h2), Some(h1)){
+    if graph.modify_edge(Edge(h1, h2), Some(h2), Some(h1)) {
         println!("Graph AFTER modify: {:?}", Edge(h1, h2));
         graph.print_graph();
     } else {
@@ -397,20 +415,20 @@ fn modify_edge_from_graph() {
 
 #[test]
 fn modify_path_from_graph() {
+    use gfa2::gfa2::orientation::Orientation;
     use gfa2::gfa2::GFA2;
     use gfa2::parser_gfa2::GFA2Parser;
-    use gfa2::gfa2::orientation::Orientation;
 
     let parser = GFA2Parser::new();
     let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
 
     if let Some(gfa) = gfa {
         let mut graph = HashGraph::from_gfa2(&gfa);
-    
-        let left = Handle::new(11, Orientation::Forward); 
+
+        let left = Handle::new(11, Orientation::Forward);
         let right = Handle::new(13, Orientation::Forward);
 
-        let l = Handle::new(11, Orientation::Forward); 
+        let l = Handle::new(11, Orientation::Forward);
         let r = Handle::new(11, Orientation::Forward);
 
         println!("Graph BEFORE modify path");
@@ -429,20 +447,20 @@ fn modify_path_from_graph() {
             } else {
                 println!("Failed to update path");
             }
-            /*
-            //let smaller path = "11+ 12-";
-            let path_handles: Vec<Handle> = vec![
-                Handle::new(11, Orientation::Forward),
-                Handle::new(12, Orientation::Backward),
-            ];
-            if graph.modify_path(b"14", path_handles) {
-                println!("Graph AFTER modify path 14 ");
-                graph.print_graph();
-            } else {
-                println!("Failed to update path");
-            }
-            */
-        }else {
+        /*
+        //let smaller path = "11+ 12-";
+        let path_handles: Vec<Handle> = vec![
+            Handle::new(11, Orientation::Forward),
+            Handle::new(12, Orientation::Backward),
+        ];
+        if graph.modify_path(b"14", path_handles) {
+            println!("Graph AFTER modify path 14 ");
+            graph.print_graph();
+        } else {
+            println!("Failed to update path");
+        }
+        */
+        } else {
             println!("Failed to update edge");
         }
     } else {
@@ -468,7 +486,6 @@ fn construct_from_gfa1() {
 
 #[test]
 fn can_reverse_complement() {
-    
     let mut graph = HashGraph::new();
     let h1 = graph.create_handle(b"ACCTT", 11);
     let h2 = graph.create_handle(b"TCAAGG", 12);
@@ -537,7 +554,7 @@ fn graph_neighbors_iter() {
         println!("{:?}", i);
     }
     */
-    
+
     assert_eq!(Some(H2), iter.next());
     assert_eq!(Some(H3), iter.next());
     assert_eq!(Some(H4), iter.next());
@@ -618,10 +635,7 @@ fn append_prepend_path() {
     let p2_4 = graph.append_step(&p2, H4);
     graph.append_step(&p2, H6);
 
-    let test_node = |graph: &HashGraph,
-                     nid: u64,
-                     o1: Option<&usize>,
-                     o2: Option<&usize>| {
+    let test_node = |graph: &HashGraph, nid: u64, o1: Option<&usize>, o2: Option<&usize>| {
         let n = graph.get_node(&NodeId::from(nid)).unwrap();
         assert_eq!(o1, n.occurrences.get(&p1));
         assert_eq!(o2, n.occurrences.get(&p2));
@@ -697,11 +711,7 @@ fn append_prepend_path() {
     test_node(&graph, 6, Some(&3), Some(&0));
 
     // Rewrite the segment Front(_) .. 5 in path 1 with the segment [2, 3]
-    graph.rewrite_segment(
-        &PathStep::Front(0),
-        &PathStep::Step(0, 2),
-        vec![H2, H3],
-    );
+    graph.rewrite_segment(&PathStep::Front(0), &PathStep::Step(0, 2), vec![H2, H3]);
 
     // Now path 1 is 2 -> 3 -> 6
     test_node(&graph, 1, None, Some(&4));
@@ -784,8 +794,7 @@ fn graph_divide_handle() {
 
     let handles = walk_path(&graph);
 
-    let expected_handles: Vec<_> =
-        [H1, H2, H3].iter().map(|h| Some(*h)).collect();
+    let expected_handles: Vec<_> = [H1, H2, H3].iter().map(|h| Some(*h)).collect();
 
     assert_eq!(expected_handles, handles);
 
@@ -818,8 +827,7 @@ fn graph_divide_handle() {
     // The path is correctly updated
     let handles = walk_path(&graph);
 
-    let expected_handles: Vec<_> =
-        [H1, H2, H4, H5, H6, H3].iter().map(|h| Some(*h)).collect();
+    let expected_handles: Vec<_> = [H1, H2, H4, H5, H6, H3].iter().map(|h| Some(*h)).collect();
 
     assert_eq!(expected_handles, handles);
 }

@@ -114,10 +114,7 @@ where
     }
 }
 
-impl<I> std::iter::FusedIterator for HandleEdgesIter<I> where
-    I: Iterator<Item = Handle>
-{
-}
+impl<I> std::iter::FusedIterator for HandleEdgesIter<I> where I: Iterator<Item = Handle> {}
 
 /// Utility struct for iterating over all edges of a HandleGraph for
 /// which we can already iterate over all handles and their neighbors.
@@ -183,10 +180,7 @@ where
     }
 }
 
-impl<G> std::iter::FusedIterator for EdgesIter<G> where
-    G: HandleNeighbors + AllHandles + Copy
-{
-}
+impl<G> std::iter::FusedIterator for EdgesIter<G> where G: HandleNeighbors + AllHandles + Copy {}
 
 /// Wrapper struct for ensuring handles are flipped correctly when
 /// iterating over the neighbors of a handle

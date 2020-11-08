@@ -92,9 +92,7 @@ pub trait HandleSequences: Sized {
 /// The `impl` on `&T`, which has the additional bound that `T:
 /// HandleGraph`, makes it possible to use this as the only bound in
 /// functions that are generic over `HandleGraph` implementations.
-pub trait HandleGraphRef:
-    AllEdges + AllHandles + HandleNeighbors + HandleSequences + Copy
-{
+pub trait HandleGraphRef: AllEdges + AllHandles + HandleNeighbors + HandleSequences + Copy {
     fn total_length(self) -> usize {
         self.all_handles().map(|h| self.node_len(h)).sum()
     }

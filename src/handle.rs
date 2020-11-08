@@ -108,9 +108,7 @@ impl Handle {
         if uint < (0x1 << 63) {
             Handle::from_integer((uint << 1) | is_reverse as u64)
         } else {
-            panic!(
-                "Tried to create a handle with a node ID that filled 64 bits"
-            )
+            panic!("Tried to create a handle with a node ID that filled 64 bits")
         }
     }
 
@@ -121,9 +119,7 @@ impl Handle {
         if uint < (0x1 << 63) {
             Handle::from_integer((uint << 1) | is_reverse as u64)
         } else {
-            panic!(
-                "Tried to create a handle with a node ID that filled 64 bits"
-            )
+            panic!("Tried to create a handle with a node ID that filled 64 bits")
         }
     }
 
