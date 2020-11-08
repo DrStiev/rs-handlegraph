@@ -28,6 +28,7 @@ use gfa2::{
     parser_gfa1::GFAResult,
 };
 use bstr::BString;
+// use indicatif::{ProgressBar, ProgressIterator, ProgressStyle};
 
 /// Function that takes a GFA2 object as input and return a HashGraph object
 /// # Example
@@ -258,6 +259,25 @@ where
 /// ```
 pub fn to_gfa2(graph: &HashGraph) -> GFA2<BString, ()> {
     use crate::handlegraph::*;
+
+    /*
+    // Provide a custom bar style
+    let pb_seg = ProgressBar::new(1000);
+    pb_seg.set_style(ProgressStyle::default_bar().template(
+        "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] [{pos}/{pos}]",
+    ));
+    // Provide a custom bar style
+    let pb_link = ProgressBar::new(1000);
+    pb_link.set_style(ProgressStyle::default_bar().template(
+        "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] [{pos}/{pos}]",
+    ));
+    // Provide a custom bar style
+    let pb_path = ProgressBar::new(1000);
+    pb_path.set_style(ProgressStyle::default_bar().template(
+        "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] [{pos}/{pos}]",
+    ));
+    */
+
     // I think it can be more efficient but for now it's good 
     let mut file: GFA2<BString, ()> = GFA2::new();
 
@@ -268,7 +288,7 @@ pub fn to_gfa2(graph: &HashGraph) -> GFA2<BString, ()> {
     };
     file.headers.push(header); 
 
-    for handle in graph.all_handles() {
+    for handle in graph.all_handles()/*.progress_with(pb_seg)*/ {
         let seq_id = BString::from(handle.id().to_string());
         let sequence: BString = graph.sequence_iter(handle.forward()).collect();
         let len: BString = BString::from(sequence.len().to_string());
@@ -290,7 +310,7 @@ pub fn to_gfa2(graph: &HashGraph) -> GFA2<BString, ()> {
         }
     };
 
-    for edge in graph.all_edges() {
+    for edge in graph.all_edges()/*.progress_with(pb_link)*/ {
         let Edge(left, right) = edge;
 
         let sid1_id: String = left.id().to_string();
@@ -316,7 +336,7 @@ pub fn to_gfa2(graph: &HashGraph) -> GFA2<BString, ()> {
         file.edges.push(edge);
     }
 
-    for path_id in graph.paths_iter() {
+    for path_id in graph.paths_iter()/*.progress_with(pb_path)*/ {
         let path_name: BString = graph.path_handle_to_name(path_id).into();
         let mut segment_names: Vec<String>= Vec::new();
 
@@ -333,7 +353,7 @@ pub fn to_gfa2(graph: &HashGraph) -> GFA2<BString, ()> {
         let mut segment_names: String = 
             segment_names.iter().fold(String::new(), |acc, str| acc + &str.to_string());
 
-        // remove the last comma " " 
+        // remove the last whitespace " " 
         segment_names.pop();
         let ogroup: GroupO<BString, _> = 
             GroupO::new(path_name, BString::from(segment_names), ());
@@ -510,6 +530,25 @@ where
 /// ```
 pub fn to_gfa(graph: &HashGraph) -> GFA<BString, ()> {
     use crate::handlegraph::*;
+
+    /*
+    // Provide a custom bar style
+    let pb_seg = ProgressBar::new(1000);
+    pb_seg.set_style(ProgressStyle::default_bar().template(
+        "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] [{pos}/{pos}]",
+    ));
+    // Provide a custom bar style
+    let pb_link = ProgressBar::new(1000);
+    pb_link.set_style(ProgressStyle::default_bar().template(
+        "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] [{pos}/{pos}]",
+    ));
+    // Provide a custom bar style
+    let pb_path = ProgressBar::new(1000);
+    pb_path.set_style(ProgressStyle::default_bar().template(
+        "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] [{pos}/{pos}]",
+    ));
+    */
+
     let mut gfa: GFA<BString, ()> = GFA::new();
 
     // default header
@@ -519,7 +558,7 @@ pub fn to_gfa(graph: &HashGraph) -> GFA<BString, ()> {
     };
     gfa.headers.push(header);
 
-    for handle in graph.all_handles() {
+    for handle in graph.all_handles()/*.progress_with(pb_seg)*/ {
         let name = BString::from(handle.id().to_string());
         let sequence: BString = graph.sequence_iter(handle.forward()).collect();
 
@@ -539,7 +578,7 @@ pub fn to_gfa(graph: &HashGraph) -> GFA<BString, ()> {
         }
     };
 
-    for edge in graph.all_edges() {
+    for edge in graph.all_edges()/*.progress_with(pb_link)*/ {
         let Edge(left, right) = edge;
         let from_segment: BString = BString::from(left.id().to_string());
         let from_orient = orient(left.is_reverse());
@@ -559,7 +598,7 @@ pub fn to_gfa(graph: &HashGraph) -> GFA<BString, ()> {
         gfa.links.push(link);
     }
 
-    for path_id in graph.paths_iter() {
+    for path_id in graph.paths_iter()/*.progress_with(pb_path)*/ {
         let path_name: BString = graph.path_handle_to_name(path_id).into();
         let mut segment_names: Vec<String> = Vec::new();
         for step in graph.steps_iter(path_id) {

@@ -90,6 +90,53 @@ fn construct_from_gfa2() {
 }
 
 #[test]
+fn construct_from_medium_gfa2() {
+    use gfa2::gfa2::GFA2;
+    use gfa2::parser_gfa2::GFA2Parser;
+
+    println!("Parse file \"test.gfa2\"");
+    // parsing file and counting items, about 3 seconds (WITH PROGRESSBAR)
+    let parser = GFA2Parser::new();
+    let gfa2: Option<GFA2<usize, ()>> = parser.parse_file("./tests/big_files/test.gfa2").ok();
+
+    if let Some(gfa2) = gfa2 {
+        // construct handlegraph, about 3 seconds (WITH PROGRESSBAR)
+        // 0 seonds for segments -> nodes
+        // 3 seconds for links -> edges
+        // 0 seconds for pathso -> paths
+        // 0 seconds for pathsu -> paths
+        println!("Create graph from GFA object");
+        let graph = HashGraph::from_gfa2(&gfa2);
+        //graph.print_graph();
+    } else {
+        panic!("Couldn't parse test GFA file!");
+    }
+}
+
+#[test]
+fn construct_from_medium_gfa1() {
+    use gfa2::gfa1::GFA;
+    use gfa2::parser_gfa1::GFAParser;
+
+    println!("Parse file \"test.gfa\"");
+    // parsing file and counting items, about 3 seconds (WITH PROGRESSBAR)
+    let parser = GFAParser::new();
+    let gfa: Option<GFA<usize, ()>> = parser.parse_file("./tests/big_files/test.gfa").ok();
+
+    if let Some(gfa) = gfa {
+        // construct handlegraph, about 3 seconds (WITH PROGRESSBAR)
+        // 0 seonds for segments -> nodes
+        // 3 seconds for links -> edges
+        // 0 seconds for paths -> paths
+        println!("Create graph from GFA object");
+        let graph = HashGraph::from_gfa(&gfa);
+        //graph.print_graph();
+    } else {
+        panic!("Couldn't parse test GFA file!");
+    }
+}
+
+#[test]
 fn handlegraph_to_gfa2() {
     use bstr::BString;
     use gfa2::{
@@ -97,14 +144,46 @@ fn handlegraph_to_gfa2() {
         parser_gfa2::GFA2Parser,
     };
 
+    println!("Parse file");
     let parser = GFA2Parser::new();
-    let gfa_in: GFA2<usize, ()> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").unwrap();
-    
-    let graph: HashGraph = from_gfa2(&gfa_in);
+    let gfa_in: GFA2<usize, ()> = parser.parse_file("./tests/big_files/test.gfa2").unwrap();
+    println!("Create Graph file");
+    let graph: HashGraph = HashGraph::from_gfa2(&gfa_in);
+    // construct gfa from handlegraph, about 3 seconds (WITH PROGRESSBAR)
+    // 0 seconds for segments -> nodes
+    // 2 seconds for links -> edges
+    // 1 seconds for paths -> paths
+    println!("Convert Graph to GFA");
     let gfa_out: GFA2<BString, ()> = to_gfa2(&graph);
 
+    /*
     println!("Original GFA2 file:\n{}", gfa_in);
     println!("GFA2 file after graph:\n{}", gfa_out); 
+    */
+}
+
+#[test]
+fn handlegraph_to_gfa1() {
+    use gfa2::gfa1::GFA;
+    use gfa2::parser_gfa1::GFAParser;
+    use bstr::BString;
+
+    println!("Parse file");
+    let parser = GFAParser::new();
+    let gfa_in: GFA<usize, ()> = parser.parse_file("./tests/big_files/test.gfa").unwrap();
+    println!("Create Graph file");
+    let graph: HashGraph = HashGraph::from_gfa(&gfa_in);
+    // construct gfa from handlegraph, about 3 seconds (WITH PROGRESSBAR)
+    // 0 seconds for segments -> nodes
+    // 2 seconds for links -> edges
+    // 1 seconds for paths -> paths
+    println!("Convert Graph to GFA");
+    let gfa_out: GFA<BString, ()> = to_gfa(&graph);
+
+    /*
+    println!("Original GFA1 file:\n{}", gfa_in);
+    println!("GFA1 file after graph:\n{}", gfa_out);
+    */
 }
 
 #[test]
@@ -284,9 +363,20 @@ fn modify_edge_from_graph() {
     }
     */
    
+    /*
     println!("Graph BEFORE modify: {:?}", Edge(h1, h2));
     graph.print_graph();
     if graph.modify_edge(Edge(h1, h2), Some(h1), Some(h5)){
+        println!("Graph AFTER modify: {:?}", Edge(h1, h2));
+        graph.print_graph();
+    } else {
+        println!("Failed to modify {:?}", Edge(h1, h2));
+    }
+    */
+
+    println!("Graph BEFORE modify: {:?}", Edge(h1, h2));
+    graph.print_graph();
+    if graph.modify_edge(Edge(h1, h2), Some(h2), Some(h1)){
         println!("Graph AFTER modify: {:?}", Edge(h1, h2));
         graph.print_graph();
     } else {
@@ -375,24 +465,6 @@ fn construct_from_gfa1() {
         panic!("Couldn't parse test GFA file!");
     }
 }
-
-#[test]
-fn handlegraph_to_gfa1() {
-    use gfa2::gfa1::GFA;
-    use gfa2::parser_gfa1::GFAParser;
-    use bstr::BString;
-
-
-    let parser = GFAParser::new();
-    let gfa_in: GFA<usize, ()> = parser.parse_file("./tests/gfa1_files/lil.gfa").unwrap();
-    
-    let graph: HashGraph = from_gfa(&gfa_in);
-    let gfa_out: GFA<BString, ()> = to_gfa(&graph);
-
-    println!("Original GFA1 file:\n{}", gfa_in);
-    println!("GFA1 file after graph:\n{}", gfa_out);
-}
-
 
 #[test]
 fn can_reverse_complement() {

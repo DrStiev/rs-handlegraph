@@ -14,3 +14,5 @@ bio = "0.32"
 fnv = "1.0"
 succinct = "0.5"
 quickcheck = "0.9"
+# progress bar
+indicatif = "0.15.0"

@@ -155,6 +155,10 @@ impl ModdableHandleGraph for HashGraph {
             if old_edge == Edge(left_node, right_node) {
                 // no need to update
                 return true;
+            } else if old_edge == Edge(right_node, left_node) {
+                // TODO: reverse edge do not work
+                self.remove_edge(old_edge);
+                self.create_edge(Edge(right_node, left_node));
             } else {
                 // update Edge
                 self.remove_edge(old_edge);

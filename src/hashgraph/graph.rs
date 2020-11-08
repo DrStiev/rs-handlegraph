@@ -177,11 +177,40 @@ impl HashGraph {
     /// */
     /// ```
     pub fn from_gfa2<T: OptFields>(gfa: &GFA2<usize, T>) -> HashGraph {
+        // use indicatif::{ProgressBar, ProgressIterator, ProgressStyle};
+
+        /*
+        // Provide a custom bar style
+        let pb_seg = ProgressBar::new(1000);
+        pb_seg.set_style(ProgressStyle::default_bar().template(
+            "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] [{pos}/{pos}]",
+        ));
+        // Provide a custom bar style
+        let pb_link = ProgressBar::new(1000);
+        pb_link.set_style(ProgressStyle::default_bar().template(
+            "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] [{pos}/{pos}]",
+        ));
+        // Provide a custom bar style
+        let pb_patho = ProgressBar::new(1000);
+        pb_patho.set_style(ProgressStyle::default_bar().template(
+            "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] [{pos}/{pos}]",
+        ));
+        // Provide a custom bar style
+        let pb_pathu = ProgressBar::new(1000);
+        pb_pathu.set_style(ProgressStyle::default_bar().template(
+            "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] [{pos}/{pos}]",
+        ));
+        */
+
         let mut graph = Self::new();
-        gfa.segments.iter().for_each(|s| graph.add_gfa2_segment(s));
-        gfa.edges.iter().for_each(|l| graph.add_gfa_edge(l));
-        gfa.groups_o.iter().for_each(|o| graph.add_gfa_path_o(o));
-        gfa.groups_u.iter().for_each(|u| graph.add_gfa_path_u(u));
+        //println!("Segments");
+        gfa.segments.iter()/*.progress_with(pb_seg)*/.for_each(|s| graph.add_gfa2_segment(s));
+        //println!("Edges");
+        gfa.edges.iter()/*.progress_with(pb_link)*/.for_each(|l| graph.add_gfa_edge(l));
+        //println!("O-Groups");
+        gfa.groups_o.iter()/*.progress_with(pb_patho)*/.for_each(|o| graph.add_gfa_path_o(o));
+        //println!("U-Groups");
+        gfa.groups_u.iter()/*.progress_with(pb_pathu)*/.for_each(|u| graph.add_gfa_path_u(u));
         graph
     }
 
@@ -272,10 +301,33 @@ impl HashGraph {
     /// */
     /// ```
     pub fn from_gfa<T: OptFields>(gfa: &GFA<usize, T>) -> HashGraph {
+        // use indicatif::{ProgressBar, ProgressIterator, ProgressStyle};
+
+        /*
+        // Provide a custom bar style
+        let pb_seg = ProgressBar::new(1000);
+        pb_seg.set_style(ProgressStyle::default_bar().template(
+            "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] [{pos}/{pos}]",
+        ));
+        // Provide a custom bar style
+        let pb_link = ProgressBar::new(1000);
+        pb_link.set_style(ProgressStyle::default_bar().template(
+            "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] [{pos}/{pos}]",
+        ));
+        // Provide a custom bar style
+        let pb_path = ProgressBar::new(1000);
+        pb_path.set_style(ProgressStyle::default_bar().template(
+            "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] [{pos}/{pos}]",
+        ));
+        */
+
         let mut graph = Self::new();
-        gfa.segments.iter().for_each(|s| graph.add_gfa_segment(s));
-        gfa.links.iter().for_each(|l| graph.add_gfa_link(l));
-        gfa.paths.iter().for_each(|p| graph.add_gfa_path(p));
+        //println!("Segments");
+        gfa.segments.iter()/*.progress_with(pb_seg)*/.for_each(|s| graph.add_gfa_segment(s));
+        //println!("Links");
+        gfa.links.iter()/*.progress_with(pb_link)*/.for_each(|l| graph.add_gfa_link(l));
+        //println!("Paths");
+        gfa.paths.iter()/*.progress_with(pb_path)*/.for_each(|p| graph.add_gfa_path(p));
         graph
     }
 
