@@ -132,8 +132,6 @@ impl ModdableHandleGraph for HashGraph {
         }
     }
 
-    // for now it's better to avoid backward orientation for the first handle
-    // because it cause an error on pos.unwrap() -> 'called `Option::unwrap()` on a `None` value'
     fn modify_edge(
         &mut self,
         old_edge: Edge,
@@ -149,7 +147,6 @@ impl ModdableHandleGraph for HashGraph {
                 return true;
             } else {
                 // update Edge
-                // seems that the reverse edge it's not created properly
                 self.remove_edge(old_edge);
                 self.create_edge(Edge(left_node, right_node));
             }
@@ -225,8 +222,6 @@ impl SubtractiveHandleGraph for HashGraph {
         }
     }
 
-    // for now it's better to avoid backward orientation for the first handle
-    // because it cause an error on pos.unwrap() -> 'called `Option::unwrap()` on a `None` value'
     fn remove_edge(&mut self, edge: Edge) -> bool {
         let Edge(left, right) = edge;
         if self.has_edge(left, right) {
@@ -238,12 +233,19 @@ impl SubtractiveHandleGraph for HashGraph {
                         .graph
                         .get_mut(&l.id())
                         .expect("Node doesn't exist for the given handle");
-                    let pos = left_node
-                        .right_edges
-                        .iter()
-                        .position(|&h| h == right)
-                        .unwrap();
-                    self.graph.get_mut(&l.id()).unwrap().right_edges.remove(pos);
+                    if left.is_reverse() {
+                        let pos = match left_node.left_edges.iter().position(|&h| h == right) {
+                            Some(p) => p,
+                            None => panic!("Error position not found"),
+                        };
+                        self.graph.get_mut(&l.id()).unwrap().left_edges.remove(pos);
+                    } else {
+                        let pos = match left_node.right_edges.iter().position(|&h| h == right) {
+                            Some(p) => p,
+                            None => panic!("Error position not found"),
+                        };
+                        self.graph.get_mut(&l.id()).unwrap().right_edges.remove(pos);
+                    }
                 }
             }
             // delete occurrencies of nodeid in path but leaves "holes" in it
@@ -270,7 +272,6 @@ impl SubtractiveHandleGraph for HashGraph {
         if self.has_path(name) {
             // delete occurrencies in path leaves "holes"
             let path_handle = self.name_to_path_handle(name).unwrap();
-            //self.destroy_path(&path_handle);
             self.paths.remove(&path_handle);
             true
         } else {

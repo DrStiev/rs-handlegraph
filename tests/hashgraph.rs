@@ -313,6 +313,30 @@ fn remove_node_from_graph() {
 
 #[test]
 fn remove_edge_from_graph() {
+    use gfa2::gfa2::orientation::Orientation;
+    use gfa2::gfa2::GFA2;
+    use gfa2::parser_gfa2::GFA2Parser;
+
+    let parser = GFA2Parser::new();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
+
+    if let Some(gfa) = gfa {
+        let mut graph = HashGraph::from_gfa2(&gfa);
+        let left: Handle = Handle::new(12 as u64, Orientation::Backward);
+        let right: Handle = Handle::new(13 as u64, Orientation::Forward);
+        let remove_edge: Edge = Edge(left, right);
+        println!("Graph BEFORE remove Edge: {:?}", remove_edge);
+        graph.print_graph();
+        if graph.remove_edge(remove_edge) {
+            println!("Graph AFTER remove Node: {:?}", remove_edge);
+            graph.print_graph();
+        } else {
+            println!("Failed to remove node: {:?}", remove_edge);
+        }
+    } else {
+        panic!("Couldn't parse test GFA file!");
+    }
+    /*
     let mut graph = HashGraph::new();
 
     let h1 = graph.create_handle(b"1", 1);
@@ -345,6 +369,7 @@ fn remove_edge_from_graph() {
     } else {
         println!("Failed to remove {:?}", Edge(h1, h6));
     }
+    */
     /*
     println!("Graph BEFORE remove: {:?}", Edge(h1, h3));
     graph.print_graph();
@@ -474,16 +499,27 @@ fn modify_edge_from_graph() {
         println!("Failed to modify {:?}", Edge(h1, h2));
     }
     */
-
     println!("Graph BEFORE modify: {:?}", Edge(h1, h2));
     graph.print_graph();
     if graph.modify_edge(Edge(h1, h2), Some(h2), Some(h1)) {
+        println!("Graph AFTER modify: {:?}", Edge(h1, h2));
+        // reverse edge works but it is displayed strangely
+        // (2, 1) displayed as (1, 2) but saved as (2, 1)
+        //println!("{}", graph.has_edge(h1, h2));
+        graph.print_graph();
+    } else {
+        println!("Failed to modify {:?}", Edge(h1, h2));
+    }
+    /*
+    println!("Graph BEFORE modify: {:?}", Edge(h1, h2));
+    graph.print_graph();
+    if graph.modify_edge(Edge(h1, h2), Some(h1), Some(h2)) {
         println!("Graph AFTER modify: {:?}", Edge(h1, h2));
         graph.print_graph();
     } else {
         println!("Failed to modify {:?}", Edge(h1, h2));
     }
-
+    */
     /*
     println!("Graph BEFORE modify: {:?}", Edge(h1, h3));
     graph.print_graph();
