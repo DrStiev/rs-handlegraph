@@ -116,6 +116,7 @@ fn construct_from_medium_gfa2() {
 #[test]
 fn operation_on_medium_gfa2() {
     use gfa2::gfa2::GFA2;
+    use gfa2::gfa2::orientation::Orientation;
     use gfa2::parser_gfa2::GFA2Parser;
 
     println!("Parse file \"test.gfa2\"");
@@ -132,20 +133,62 @@ fn operation_on_medium_gfa2() {
         println!("Create graph from GFA object");
         let mut graph = HashGraph::from_gfa2(&gfa2);
 
-        // remove nodes, edges and paths
+        println!("Remove nodes");
         for i in 1..1001 {
+            // about 10 seconds
             if !graph.remove_handle(i as u64) {
                 println!("Error removing node {}!", i);
                 return;
             }
         }
-        const PATHS: [&[u8]; 3] = [b"gi|568815592:32578768-32589835", b"gi|568815529:3998044-4011446", b"gi|568815551:3814534-3830133"];
+        println!("Remove paths");
+        const PATHS: [&[u8]; 3] = [
+            b"gi|568815592:32578768-32589835",
+            b"gi|568815529:3998044-4011446",
+            b"gi|568815551:3814534-3830133",
+        ];
         for i in 1..PATHS.len() {
             let path_name: &[u8] = PATHS.get(i as usize).unwrap();
             if !graph.remove_path(path_name) {
                 println!("Error removing path {}!", i);
                 return;
             };
+        }
+        println!("Remove edges");
+        if !graph.remove_edge(Edge(
+            Handle::new(2138 as u64, Orientation::Backward),
+            Handle::new(2137 as u64, Orientation::Backward),
+        )) {
+            println!("Errore removing edge 1");
+            return;
+        }
+        if !graph.remove_edge(Edge(
+            Handle::new(2139 as u64, Orientation::Forward),
+            Handle::new(2140 as u64, Orientation::Forward),
+        )) {
+            println!("Errore removing edge 2");
+            return;
+        }
+        if !graph.remove_edge(Edge(
+            Handle::new(2139 as u64, Orientation::Forward),
+            Handle::new(3090 as u64, Orientation::Forward),
+        )) {
+            println!("Errore removing edge 3");
+            return;
+        }
+        if !graph.remove_edge(Edge(
+            Handle::new(2139 as u64, Orientation::Backward),
+            Handle::new(2138 as u64, Orientation::Backward),
+        )) {
+            println!("Errore removing edge 4");
+            return;
+        }
+        if !graph.remove_edge(Edge(
+            Handle::new(2140 as u64, Orientation::Forward),
+            Handle::new(2141 as u64, Orientation::Forward),
+        )) {
+            println!("Errore removing edge 5");
+            return;
         }
     //graph.print_graph();
     } else {
@@ -168,7 +211,7 @@ fn construct_from_big_gfa2() {
         println!("Create graph from GFA object");
         // creating the graph, about 20 seconds (WITHOUT PROGRESSBAR)
         let _graph = HashGraph::from_gfa2(&gfa);
-        //graph.print_graph();
+    //graph.print_graph();
     } else {
         panic!("Couldn't parse test GFA file!");
     }

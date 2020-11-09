@@ -595,7 +595,7 @@ impl PathHandleGraph for HashGraph {
     fn destroy_path(&mut self, path: &Self::PathHandle) {
         let p: &Path = match self.paths.get(&path) {
             Some(p) => p,
-            None => return, 
+            None => return,
         };
 
         for handle in p.nodes.iter() {
