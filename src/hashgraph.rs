@@ -132,7 +132,8 @@ impl ModdableHandleGraph for HashGraph {
         }
     }
 
-    // for now it's better to avoid backward orientation for handles
+    // for now it's better to avoid backward orientation for the first handle
+    // because it cause an error on pos.unwrap() -> 'called `Option::unwrap()` on a `None` value'
     fn modify_edge(
         &mut self,
         old_edge: Edge,
@@ -224,7 +225,8 @@ impl SubtractiveHandleGraph for HashGraph {
         }
     }
 
-    // for now it's better to avoid backward orientation for handles
+    // for now it's better to avoid backward orientation for the first handle
+    // because it cause an error on pos.unwrap() -> 'called `Option::unwrap()` on a `None` value'
     fn remove_edge(&mut self, edge: Edge) -> bool {
         let Edge(left, right) = edge;
         if self.has_edge(left, right) {

@@ -337,16 +337,15 @@ fn remove_edge_from_graph() {
     graph.append_step(&p2, h1);
     graph.append_step(&p2, h6);
 
-    /*
     println!("Graph BEFORE remove: {:?}", Edge(h1, h6));
     graph.print_graph();
-    if graph.remove_edge(Edge(h1, h6)){
+    if graph.remove_edge(Edge(h1, h6)) {
         println!("Graph AFTER remove: {:?}", Edge(h1, h6));
         graph.print_graph();
     } else {
         println!("Failed to remove {:?}", Edge(h1, h6));
     }
-    */
+    /*
     println!("Graph BEFORE remove: {:?}", Edge(h1, h3));
     graph.print_graph();
     if graph.remove_edge(Edge(h1, h3)) {
@@ -355,6 +354,7 @@ fn remove_edge_from_graph() {
     } else {
         println!("Failed to remove {:?}", Edge(h1, h3));
     }
+    */
 }
 
 #[test]
