@@ -115,8 +115,8 @@ fn construct_from_medium_gfa2() {
 
 #[test]
 fn operation_on_medium_gfa2() {
-    use gfa2::gfa2::GFA2;
     use gfa2::gfa2::orientation::Orientation;
+    use gfa2::gfa2::GFA2;
     use gfa2::parser_gfa2::GFA2Parser;
 
     println!("Parse file \"test.gfa2\"");
@@ -159,35 +159,35 @@ fn operation_on_medium_gfa2() {
             Handle::new(2138 as u64, Orientation::Backward),
             Handle::new(2137 as u64, Orientation::Backward),
         )) {
-            println!("Errore removing edge 1");
+            println!("Error removing edge 1");
             return;
         }
         if !graph.remove_edge(Edge(
             Handle::new(2139 as u64, Orientation::Forward),
             Handle::new(2140 as u64, Orientation::Forward),
         )) {
-            println!("Errore removing edge 2");
+            println!("Error removing edge 2");
             return;
         }
         if !graph.remove_edge(Edge(
             Handle::new(2139 as u64, Orientation::Forward),
             Handle::new(3090 as u64, Orientation::Forward),
         )) {
-            println!("Errore removing edge 3");
+            println!("Error removing edge 3");
             return;
         }
         if !graph.remove_edge(Edge(
             Handle::new(2139 as u64, Orientation::Backward),
             Handle::new(2138 as u64, Orientation::Backward),
         )) {
-            println!("Errore removing edge 4");
+            println!("Error removing edge 4");
             return;
         }
         if !graph.remove_edge(Edge(
             Handle::new(2140 as u64, Orientation::Forward),
             Handle::new(2141 as u64, Orientation::Forward),
         )) {
-            println!("Errore removing edge 5");
+            println!("Error removing edge 5");
             return;
         }
     //graph.print_graph();

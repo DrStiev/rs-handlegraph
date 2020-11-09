@@ -303,7 +303,7 @@ impl AdditiveHandleGraph for HashGraph {
         Handle::pack(id, false)
     }
 
-    fn create_edge(&mut self, Edge(left, right): Edge) {
+    fn create_edge(&mut self, Edge(left, right): Edge) -> bool {
         let add_edge = {
             let left_node = self
                 .graph
@@ -334,6 +334,9 @@ impl AdditiveHandleGraph for HashGraph {
                     right_node.left_edges.push(left.flip());
                 }
             }
+            true
+        } else {
+            false
         }
     }
 }

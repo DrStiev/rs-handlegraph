@@ -55,7 +55,7 @@ pub trait AdditiveHandleGraph {
 
     fn create_handle<T: Into<NodeId>>(&mut self, seq: &[u8], node_id: T) -> Handle;
 
-    fn create_edge(&mut self, edge: Edge);
+    fn create_edge(&mut self, edge: Edge) -> bool;
 }
 
 pub trait ModdableHandleGraph {
