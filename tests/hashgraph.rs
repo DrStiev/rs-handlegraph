@@ -114,6 +114,46 @@ fn construct_from_medium_gfa2() {
 }
 
 #[test]
+fn operation_on_medium_gfa2() {
+    use gfa2::gfa2::GFA2;
+    use gfa2::parser_gfa2::GFA2Parser;
+
+    println!("Parse file \"test.gfa2\"");
+    // parsing file, about 3 seconds (WITH PROGRESSBAR)
+    let parser = GFA2Parser::new();
+    let gfa2: Option<GFA2<usize, ()>> = parser.parse_file("./tests/big_files/test.gfa2").ok();
+
+    if let Some(gfa2) = gfa2 {
+        // construct handlegraph, about 3 seconds (WITH PROGRESSBAR)
+        // 0 seonds for segments -> nodes
+        // 3 seconds for links -> edges
+        // 0 seconds for pathso -> paths
+        // 0 seconds for pathsu -> paths
+        println!("Create graph from GFA object");
+        let mut graph = HashGraph::from_gfa2(&gfa2);
+
+        // remove nodes, edges and paths
+        for i in 1..1001 {
+            if !graph.remove_handle(i as u64) {
+                println!("Error removing node {}!", i);
+                return;
+            }
+        }
+        const PATHS: [&[u8]; 3] = [b"gi|568815592:32578768-32589835", b"gi|568815529:3998044-4011446", b"gi|568815551:3814534-3830133"];
+        for i in 1..PATHS.len() {
+            let path_name: &[u8] = PATHS.get(i as usize).unwrap();
+            if !graph.remove_path(path_name) {
+                println!("Error removing path {}!", i);
+                return;
+            };
+        }
+    //graph.print_graph();
+    } else {
+        panic!("Couldn't parse test GFA file!");
+    }
+}
+
+#[test]
 #[ignore]
 fn construct_from_big_gfa2() {
     use gfa2::gfa2::GFA2;

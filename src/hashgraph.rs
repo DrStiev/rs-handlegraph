@@ -268,7 +268,8 @@ impl SubtractiveHandleGraph for HashGraph {
         if self.has_path(name) {
             // delete occurrencies in path leaves "holes"
             let path_handle = self.name_to_path_handle(name).unwrap();
-            self.destroy_path(&path_handle);
+            //self.destroy_path(&path_handle);
+            self.paths.remove(&path_handle);
             true
         } else {
             false
@@ -592,7 +593,10 @@ impl PathHandleGraph for HashGraph {
     }
 
     fn destroy_path(&mut self, path: &Self::PathHandle) {
-        let p: &Path = self.paths.get(&path).unwrap();
+        let p: &Path = match self.paths.get(&path) {
+            Some(p) => p,
+            None => return, 
+        };
 
         for handle in p.nodes.iter() {
             let node: &mut Node = self.graph.get_mut(&handle.id()).unwrap();
