@@ -605,19 +605,18 @@ fn construct_from_gfa1() {
 
 #[test]
 fn can_reverse_complement() {
-    let mut graph = HashGraph::new();
-    let h1 = graph.create_handle(b"ACCTT", 11);
-    let h2 = graph.create_handle(b"TCAAGG", 12);
-    let h3 = graph.create_handle(b"CTTGATT", 13);
+    use gfa2::gfa2::GFA2;
+    use gfa2::parser_gfa2::GFA2Parser;
 
-    // use .flip() to apply reverse complement to the node
-    graph.apply_orientation(h2.flip());
+    let parser = GFA2Parser::new();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
 
-    graph.create_edge(Edge(h1, h2));
-    graph.create_edge(Edge(h2, h3));
-    graph.create_edge(Edge(h1, h3));
-
-    graph.print_graph();
+    if let Some(gfa) = gfa {
+        let graph = HashGraph::from_gfa2(&gfa);
+        graph.print_graph();
+    } else {
+        panic!("Couldn't parse test GFA file!");
+    }
 }
 
 #[test]
@@ -635,12 +634,12 @@ fn degree_is_correct() {
 
 fn path_graph() -> HashGraph {
     let mut graph = HashGraph::new();
-    let h1 = graph.create_handle(b"A", 1);
-    let h2 = graph.create_handle(b"AA", 2);
-    let h3 = graph.create_handle(b"AAA", 3);
-    let h4 = graph.create_handle(b"AAAA", 4);
-    let h5 = graph.create_handle(b"AAAAA", 5);
-    let h6 = graph.create_handle(b"AAAAAA", 6);
+    let h1 = graph.create_handle(b"1", 1);
+    let h2 = graph.create_handle(b"2", 2);
+    let h3 = graph.create_handle(b"3", 3);
+    let h4 = graph.create_handle(b"4", 4);
+    let h5 = graph.create_handle(b"5", 5);
+    let h6 = graph.create_handle(b"6", 6);
 
     /*
     edges
@@ -668,11 +667,7 @@ fn graph_neighbors_iter() {
     // let mut iter = graph.handle_edges_iter(H1, Direction::Right);
     let mut iter = graph.neighbors(H1, Direction::Right);
 
-    /*
-    for i in iter {
-        println!("{:?}", i);
-    }
-    */
+    graph.print_graph();
 
     assert_eq!(Some(H2), iter.next());
     assert_eq!(Some(H3), iter.next());

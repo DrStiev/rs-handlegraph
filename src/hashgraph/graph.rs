@@ -56,7 +56,6 @@ impl HashGraph {
         self.create_handle(&seg.sequence, seg.id as u64);
     }
 
-    // TODO: handle reverse and complement
     fn add_gfa_edge<T: OptFields>(&mut self, link: &Edge<usize, T>) {
         let left_len = link.sid1.to_string().len();
         let right_len = link.sid2.to_string().len();
@@ -385,13 +384,13 @@ impl HashGraph {
     ///         11: ACCTT
     ///     }
     ///     Edges: {
-    ///         12 --> 13
-    ///         11 --> 12
-    ///         11 --> 13
+    ///         12- --> 13+
+    ///         11+ --> 12-
+    ///         11+ --> 13+
     ///     }
     ///     Paths: {
     ///         14: ACCTT -> CTTGATT
-    ///         15: ACCTT -> TCAAGG -> CTTGATT
+    ///         15: ACCTT -> CCTTGA -(TCAAGG) -> CTTGATT
     ///     }
     /// }
     /// */
@@ -440,13 +439,37 @@ impl HashGraph {
                 "NUL".to_string()
             };
 
-            println!("\t\t{} --> {}", from_node, to_node);
+            let mut left_orient: String = "".to_string();
+            if from_node != "NUL" {
+                if left.is_reverse() {
+                    left_orient = "-".to_string();
+                } else {
+                    left_orient = "+".to_string();
+                }
+            }
+
+            let mut right_orient: String = "".to_string();
+            if to_node != "NUL" {
+                if right.is_reverse() {
+                    right_orient = "-".to_string();
+                } else {
+                    right_orient = "+".to_string();
+                }
+            }
+
+            println!(
+                "\t\t{}{} --> {}{}",
+                from_node, left_orient, to_node, right_orient
+            );
         }
         println!("\t}}");
     }
 
     /// Function that prints all the paths in a graph
     fn print_paths(&self) {
+        use bio::alphabets::dna;
+        use bstr::BString;
+
         println!("\tPaths: {{");
         // get all the path
         for path_id in self.paths_iter() {
@@ -464,7 +487,13 @@ impl HashGraph {
                 if ix != 0 {
                     print!(" -> ");
                 }
-                print!("{}", node.sequence);
+                // print correct reverse and complement sequence to display the correct path
+                if handle.is_reverse() {
+                    let rev_sequence: BString = dna::revcomp(node.sequence.as_slice()).into();
+                    print!("{} -({})", rev_sequence, node.sequence);
+                } else {
+                    print!("{}", node.sequence);
+                }
             }
             println!();
         }
