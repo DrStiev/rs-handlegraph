@@ -374,18 +374,57 @@ impl HashGraph {
     }
 
     /// Print an HashGraph object in a simplified way
+    /// # Example
+    /// ```ignore
+    /// graph.print_simple_graph();
+    /// /*
+    /// Graph: {
+    ///     Nodes: {
+    ///         13: CTTGATT
+    ///         12: TCAAGG
+    ///         11: ACCTT
+    ///     }
+    ///     Edges: {
+    ///         12 --> 13
+    ///         11 --> 12
+    ///         11 --> 13
+    ///     }
+    ///     Paths: {
+    ///         14: ACCTT -> CTTGATT
+    ///         15: ACCTT -> TCAAGG -> CTTGATT
+    ///     }
+    /// }
+    /// */
+    /// ```
     pub fn print_graph(&self) {
+        println!("Graph: {{");
+        // print all the segments
+        self.print_segments();
+        // print all the edges
+        self.print_edges();
+        // print all the paths
+        self.print_paths();
+        println!("}}");
+    }
+
+    /// Function that prints all the segments in a graph
+    fn print_segments(&self) {
         use bstr::BString;
 
-        println!("Graph : {{");
+        println!("\tNodes: {{");
         // get all the nodeid and sequence associated with them
         for handle in self.all_handles() {
             let node_id: String = handle.id().to_string();
             let sequence: BString = self.sequence_iter(handle.forward()).collect();
 
-            println!("\t{} [sequence = {}]", node_id, sequence);
+            println!("\t\t{}: {}", node_id, sequence);
         }
-        println!();
+        println!("\t}}");
+    }
+
+    /// Function that prints all the edges in a graph
+    fn print_edges(&self) {
+        println!("\tEdges: {{");
         // get all the link (edge) between nodes
         for edge in self.all_edges() {
             let GraphEdge(left, right) = edge;
@@ -401,19 +440,26 @@ impl HashGraph {
                 "NUL".to_string()
             };
 
-            println!("\t{} --> {}", from_node, to_node);
+            println!("\t\t{} --> {}", from_node, to_node);
         }
-        println!();
+        println!("\t}}");
+    }
+
+    /// Function that prints all the paths in a graph
+    fn print_paths(&self) {
+        println!("\tPaths: {{");
         // get all the path
         for path_id in self.paths_iter() {
             let path = self.paths.get(&path_id).unwrap();
+            //get the id or path name of a path
+            let name = &path.name;
             let mut first: bool = true;
 
             for (ix, handle) in path.nodes.iter().enumerate() {
                 let node = self.get_node(&handle.id()).unwrap();
                 if first {
                     first = false;
-                    print!("\t");
+                    print!("\t\t{}: ", name);
                 }
                 if ix != 0 {
                     print!(" -> ");
@@ -422,7 +468,7 @@ impl HashGraph {
             }
             println!();
         }
-        println!("}}");
+        println!("\t}}");
     }
 
     pub fn print_occurrences(&self) {
