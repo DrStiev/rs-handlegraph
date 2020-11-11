@@ -272,28 +272,6 @@ Graph: {
 - Given an HashGaph it's possible to ADD, REMOVE and MODIFY the values in it:
     - ADD OPERATIONS: 
     ```rust
-    let parser = GFA2Parser::new();
-    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
-    let mut graph = HashGraph::from_gfa2(&gfa);
-    /* 
-    Graph: {
-        Nodes: {
-                13: CTTGATT
-                12: TCAAGG
-                11: ACCTT
-        }
-        Edges: {
-                12- --> 13+
-                11+ --> 12-
-                11+ --> 13+
-        }
-        Paths: {
-                15: ACCTT -> CTTGATT   
-                14: ACCTT -> CCTTGA -(TCAAGG) -> CTTGATT
-        }
-    }
-    */
-
     // create a new handle.
     // an Handle is a NodeId with and Orientation packed as a single u64 
     let h1 = graph.create_handle(b"1", 1);
@@ -332,28 +310,6 @@ Graph: {
     ```
     - REMOVE OPERATIONS:
     ```rust
-    let parser = GFA2Parser::new();
-    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
-    let mut graph = HashGraph::from_gfa2(&gfa);
-    /* 
-    Graph: {
-        Nodes: {
-                13: CTTGATT
-                12: TCAAGG
-                11: ACCTT
-        }
-        Edges: {
-                12- --> 13+
-                11+ --> 12-
-                11+ --> 13+
-        }
-        Paths: {
-                15: ACCTT -> CTTGATT   
-                14: ACCTT -> CCTTGA -(TCAAGG) -> CTTGATT
-        }
-    }
-    */
-    
     let remove_id: NodeId = 12.into();
     // remove the node if exists and all its's occurrencies from the edge and path list
     graph.remove_handle(remove_id);
@@ -371,7 +327,8 @@ Graph: {
         }
     }
     */
-
+    ```
+    ```rust
     let left: Handle = Handle::new(12 as u64, Orientation::Backward);
     let right: Handle = Handle::new(13 as u64, Orientation::Forward);
     let remove_edge: Edge = Edge(left, right);
@@ -393,7 +350,8 @@ Graph: {
         }
     }
     */
-
+    ```
+    ```rust
     // remove a path if exists
     graph.remove_path(&BString::from(15.to_string()));
     /* Obtaining
@@ -413,7 +371,8 @@ Graph: {
         }
     }
     */
-    
+    ```
+    ```rust
     // delete all the occurrencies in the graph and set te max and min nodes
     // values to default
     graph.clear_graph();
@@ -430,28 +389,6 @@ Graph: {
     ```
     - MODIFIY OPERATIONS:
     ```rust
-    let parser = GFA2Parser::new();
-    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
-    let mut graph = HashGraph::from_gfa2(&gfa);
-    /* 
-    Graph: {
-        Nodes: {
-                13: CTTGATT
-                12: TCAAGG
-                11: ACCTT
-        }
-        Edges: {
-                12- --> 13+
-                11+ --> 12-
-                11+ --> 13+
-        }
-        Paths: {
-                15: ACCTT -> CTTGATT   
-                14: ACCTT -> CCTTGA -(TCAAGG) -> CTTGATT
-        }
-    }
-    */
-
     let modify_id: NodeId = 12.into();
     let modify_seq: &[u8] = b"TEST_SEQUENCE";
     // modify a node if exists, changing its sequence and leaving the nodeId the same
@@ -475,7 +412,8 @@ Graph: {
         }
     }
     */
-    
+    ```
+    ```rust
     let left: Handle = Handle::new(11 as u64, Orientation::Forward);
     let right: Handle = Handle::new(13 as u64, Orientation::Forward);
     let new_left: Handle = Handle::new(11 as u64, Orientation::Forward);
@@ -500,7 +438,8 @@ Graph: {
         }
     }
     */
-    
+    ```
+    ```rust
     let path_handles: Vec<Handle> = vec![
         Handle::new(11, Orientation::Forward),
         Handle::new(11, Orientation::Forward),
