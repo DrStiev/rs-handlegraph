@@ -83,6 +83,7 @@ fn construct_from_gfa2() {
 
     if let Some(gfa) = gfa {
         let graph = HashGraph::from_gfa2(&gfa);
+        println!("{:#?}", graph);
         graph.print_graph();
     } else {
         panic!("Couldn't parse test GFA file!");
@@ -261,6 +262,25 @@ fn handlegraph_to_gfa2() {
     println!("Original GFA2 file:\n{}", gfa_in);
     println!("GFA2 file after graph:\n{}", gfa_out);
     */
+}
+
+#[test]
+fn markdown_test() {
+    use bstr::BString;
+    use gfa2::{gfa2::GFA2, parser_gfa2::GFA2Parser};
+
+    println!("Parse file");
+    let parser = GFA2Parser::new();
+    let gfa_in: GFA2<usize, ()> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").unwrap();
+    println!("Create Graph file");
+    let graph: HashGraph = HashGraph::from_gfa2(&gfa_in);
+    graph.print_graph();
+    println!("Convert Graph to GFA");
+    let _gfa_out: GFA2<BString, ()> = to_gfa2(&graph);
+
+    //println!("Original GFA2 file:\n{}", gfa_in);
+    println!("GFA2 file after graph:\n{:#?}", _gfa_out);
+
 }
 
 #[test]
