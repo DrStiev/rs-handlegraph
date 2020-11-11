@@ -13,10 +13,10 @@ This library performs 4 main operations:
 To perform this operation the GFA Object NEEDS to be in [usize](https://doc.rust-lang.org/std/primitive.usize.html) type and usually the OptionalFields field of the GFA object it's ignored.
 ```rust
 let parser: GFA2Parser<usize, ()> = GFA2Parser::new();
-    let gfa2: GFA2<usize, ()> = parser
-        .parse_file(&"./tests/gfa2_files/spec_q7.gfa")
-        .unwrap();
-    println!("{:#?}", gfa2),
+let gfa2: GFA2<usize, ()> = parser
+    .parse_file(&"./tests/gfa2_files/spec_q7.gfa")
+    .unwrap();
+println!("{:#?}", gfa2);
 ```
 The GFA Object will look like:
 ```
