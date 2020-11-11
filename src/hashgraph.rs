@@ -150,21 +150,6 @@ impl ModdableHandleGraph for HashGraph {
                 self.remove_edge(old_edge);
                 self.create_edge(Edge(left_node, right_node));
             }
-            // update occurrencies of nodeid in path
-            let mut x: i64 = 0;
-            while self.get_path(&x).is_some() {
-                let nodes = &self.paths.get_mut(&x).unwrap().nodes;
-                if let Some(l) = nodes.iter().position(|x| x.id() == left.id()) {
-                    if let Some(r) = nodes.iter().position(|x| x.id() == right.id()) {
-                        let lr = l + 1;
-                        if lr == r {
-                            *self.paths.get_mut(&x).unwrap().nodes.get_mut(l).unwrap() = left_node;
-                            *self.paths.get_mut(&x).unwrap().nodes.get_mut(r).unwrap() = right_node;
-                        }
-                    }
-                }
-                x += 1;
-            }
             true
         } else {
             false

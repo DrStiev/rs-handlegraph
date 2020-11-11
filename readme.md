@@ -272,32 +272,259 @@ Graph: {
 - Given an HashGaph it's possible to ADD, REMOVE and MODIFY the values in it:
     - ADD OPERATIONS: 
     ```rust
-    fn append_handle(&mut self, seq: &[u8]) -> Handle;
+    let parser = GFA2Parser::new();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
+    let mut graph = HashGraph::from_gfa2(&gfa);
+    /* 
+    Graph: {
+        Nodes: {
+                13: CTTGATT
+                12: TCAAGG
+                11: ACCTT
+        }
+        Edges: {
+                12- --> 13+
+                11+ --> 12-
+                11+ --> 13+
+        }
+        Paths: {
+                15: ACCTT -> CTTGATT   
+                14: ACCTT -> CCTTGA -(TCAAGG) -> CTTGATT
+        }
+    }
+    */
 
-    fn create_handle<T: Into<NodeId>>(&mut self, seq: &[u8], node_id: T) -> Handle;
-    
-    fn create_edge(&mut self, edge: Edge) -> bool;
+    // create a new handle.
+    // an Handle is a NodeId with and Orientation packed as a single u64 
+    let h1 = graph.create_handle(b"1", 1);
+    let h2 = graph.create_handle(b"2", 2);
+
+    // create an edge between 2 handles
+    graph.create_edge(Edge(h1, h2));
+
+    // create a new path specifying if it circular or not
+    let p1 = graph.create_path_handle(b"path-1", false);
+    // insert in the path created the "steps" (handle)
+    graph.append_step(&p1, h1);
+    graph.append_step(&p1, h2);
+    /* Obtaining
+    Graph: {
+        Nodes: {
+                1: 1
+                2: 2
+                13: CTTGATT
+                12: TCAAGG
+                11: ACCTT
+        }
+        Edges: {
+                1+ --> 2+
+                12- --> 13+
+                11+ --> 12-
+                11+ --> 13+
+        }
+        Paths: {
+                path-1: 1 -> 2
+                15: ACCTT -> CTTGATT   
+                14: ACCTT -> CCTTGA -(TCAAGG) -> CTTGATT
+        }
+    }
+    */
     ```
     - REMOVE OPERATIONS:
     ```rust
-    fn remove_handle<T: Into<NodeId>>(&mut self, node: T) -> bool;
+    let parser = GFA2Parser::new();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
+    let mut graph = HashGraph::from_gfa2(&gfa);
+    /* 
+    Graph: {
+        Nodes: {
+                13: CTTGATT
+                12: TCAAGG
+                11: ACCTT
+        }
+        Edges: {
+                12- --> 13+
+                11+ --> 12-
+                11+ --> 13+
+        }
+        Paths: {
+                15: ACCTT -> CTTGATT   
+                14: ACCTT -> CCTTGA -(TCAAGG) -> CTTGATT
+        }
+    }
+    */
     
-    fn remove_edge(&mut self, edge: Edge) -> bool;
+    let remove_id: NodeId = 12.into();
+    // remove the node if exists and all its's occurrencies from the edge and path list
+    graph.remove_handle(remove_id);
+    /* Obtaining
+    Graph: {
+        Nodes: {
+                13: CTTGATT
+                11: ACCTT
+        }
+        Edges: {
+                11+ --> 13+
+        }
+        Paths: {
+                15: ACCTT -> CTTGATT   
+        }
+    }
+    */
+
+    let left: Handle = Handle::new(12 as u64, Orientation::Backward);
+    let right: Handle = Handle::new(13 as u64, Orientation::Forward);
+    let remove_edge: Edge = Edge(left, right);
+    // remove the edge if exists, and all it's occurrencies from the path list
+    graph.remove_edge(remove_edge);
+    /* Obtaining
+    Graph: {
+        Nodes: {
+                13: CTTGATT
+                12: TCAAGG
+                11: ACCTT
+        }
+        Edges: {
+                11+ --> 12-
+                11+ --> 13+
+        }
+        Paths: {
+                15: ACCTT -> CTTGATT   
+        }
+    }
+    */
+
+    // remove a path if exists
+    graph.remove_path(&BString::from(15.to_string()));
+    /* Obtaining
+    Graph: {
+        Nodes: {
+                13: CTTGATT
+                12: TCAAGG
+                11: ACCTT
+        }
+        Edges: {
+                12- --> 13+
+                11+ --> 12-
+                11+ --> 13+
+        }
+        Paths: {
+                14: ACCTT -> CCTTGA -(TCAAGG) -> CTTGATT
+        }
+    }
+    */
     
-    fn remove_path(&mut self, name: &[u8]) -> bool;
-    
-    fn clear_graph(&mut self);
+    // delete all the occurrencies in the graph and set te max and min nodes
+    // values to default
+    graph.clear_graph();
+    /* Obtaining
+    Graph: {
+        Nodes: {
+        }
+        Edges: {
+        }
+        Paths: {
+        }
+    }
+    */
     ```
     - MODIFIY OPERATIONS:
     ```rust
-    fn modify_handle<T: Into<NodeId>>(&mut self, node_id: T, seq: &[u8]) -> bool;
+    let parser = GFA2Parser::new();
+    let gfa: Option<GFA2<usize, ()>> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").ok();
+    let mut graph = HashGraph::from_gfa2(&gfa);
+    /* 
+    Graph: {
+        Nodes: {
+                13: CTTGATT
+                12: TCAAGG
+                11: ACCTT
+        }
+        Edges: {
+                12- --> 13+
+                11+ --> 12-
+                11+ --> 13+
+        }
+        Paths: {
+                15: ACCTT -> CTTGATT   
+                14: ACCTT -> CCTTGA -(TCAAGG) -> CTTGATT
+        }
+    }
+    */
+
+    let modify_id: NodeId = 12.into();
+    let modify_seq: &[u8] = b"TEST_SEQUENCE";
+    // modify a node if exists, changing its sequence and leaving the nodeId the same
+    // the new sequence will replace all the occurrencies of the old sequence in the path vector
+    graph.modify_handle(modify_id, modify_seq);
+    /* Obtaining
+    Graph: {
+        Nodes: {
+                13: CTTGATT
+                12: TEST_SEQUENCE      
+                11: ACCTT
+        }
+        Edges: {
+                12- --> 13+
+                11+ --> 12-
+                11+ --> 13+
+        }
+        Paths: {
+                15: ACCTT -> CTTGATT   
+                14: ACCTT -> EGNEUQES_ASEA -(TEST_SEQUENCE) -> CTTGATT        
+        }
+    }
+    */
     
-    fn modify_edge(
-        &mut self,
-        old_edge: Edge,
-        left_node: Option<Handle>,
-        right_node: Option<Handle>,
-    ) -> bool;
+    let left: Handle = Handle::new(11 as u64, Orientation::Forward);
+    let right: Handle = Handle::new(13 as u64, Orientation::Forward);
+    let new_left: Handle = Handle::new(11 as u64, Orientation::Forward);
+    let new_right: Handle = Handle::new(11 as u64, Orientation::Forward);
+    let mod_edge: Edge = Edge(left, right);
+    // modify an edge if exists, removing all the occurrencies of the edge from the path list
+    graph.modify_edge(mod_edge, new_left, new_right)
+    /* Obtaining
+    Graph: {
+        Nodes: {
+                13: CTTGATT
+                12: TCAAGG
+                11: ACCTT
+        }
+        Edges: {
+                12- --> 13+
+                11+ --> 12-
+                11+ --> 11+
+        }
+        Paths: { 
+                14: ACCTT -> CCTTGA -(TCAAGG) -> CTTGATT
+        }
+    }
+    */
     
-    fn modify_path(&mut self, path_name: &[u8], sequence_of_id: Vec<Handle>) -> bool;
+    let path_handles: Vec<Handle> = vec![
+        Handle::new(11, Orientation::Forward),
+        Handle::new(11, Orientation::Forward),
+        Handle::new(12, Orientation::Forward),
+        Handle::new(13, Orientation::Forward),
+    ];
+    // modify a path if exists, replace all the old occurrencies with the new ones
+    graph.modify_path(b"14", path_handles);
+    /* Obtaining
+    Graph: {
+        Nodes: {
+                13: CTTGATT
+                12: TCAAGG
+                11: ACCTT
+        }
+        Edges: {
+                12- --> 13+
+                11+ --> 12-
+                11+ --> 13+
+        }
+        Paths: {
+                15: ACCTT -> CTTGATT   
+                14: ACCTT -> ACCTT -> TCAAGG -> CTTGATT
+        }
+    }
+    */
     ```
