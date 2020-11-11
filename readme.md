@@ -12,8 +12,8 @@ This library performs 4 main operations:
 - Given a GFA (or GFA2) object it creates the corresponding HashGraph.\
 To perform this operation the GFA Object NEEDS to be in [usize](https://doc.rust-lang.org/std/primitive.usize.html) type and usually the OptionalFields field of the GFA object it's ignored.
 ```rust
-let parser: GFA2Parser<usize, OptionalFields> = GFA2Parser::new();
-    let gfa2: GFA2<usize, OptionalFields> = parser
+let parser: GFA2Parser<usize, ()> = GFA2Parser::new();
+    let gfa2: GFA2<usize, ()> = parser
         .parse_file(&"./tests/gfa2_files/spec_q7.gfa")
         .unwrap();
     println!("{:#?}", gfa2),
@@ -164,7 +164,7 @@ min_id: NodeId(11),
 Because the resulting GFA Object will use the [BString](https://docs.rs/bstr/0.2.14/bstr/struct.BString.html) type instead of the usize, the Orientation field will be reverted from [01] to [+-], but all the other fields will be kept as number instead of finding their old string value.
 ```rust
 let parser = GFA2Parser::new();
-    let gfa_in: GFA2<usize, ()> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").unwrap();
+let gfa_in: GFA2<usize, ()> = parser.parse_file("./tests/gfa2_files/spec_q7.gfa").unwrap();
 let graph: HashGraph = HashGraph::from_gfa2(&gfa_in);
 let _gfa_out: GFA2<BString, ()> = to_gfa2(&graph);
 println!("{:#?}", _gfa_out);

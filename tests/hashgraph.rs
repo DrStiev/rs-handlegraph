@@ -280,7 +280,6 @@ fn markdown_test() {
 
     //println!("Original GFA2 file:\n{}", gfa_in);
     println!("GFA2 file after graph:\n{:#?}", _gfa_out);
-
 }
 
 #[test]
