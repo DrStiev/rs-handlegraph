@@ -285,10 +285,14 @@ impl AdditiveHandleGraph for HashGraph {
         if seq.is_empty() {
             panic!("Tried to add empty handle");
         }
-        self.graph.insert(id, Node::new(seq));
-        self.max_id = std::cmp::max(self.max_id, id);
-        self.min_id = std::cmp::min(self.min_id, id);
-        Handle::pack(id, false)
+        if self.get_node(&id).is_some() {
+            panic!("Node already exists!");
+        } else {
+            self.graph.insert(id, Node::new(seq));
+            self.max_id = std::cmp::max(self.max_id, id);
+            self.min_id = std::cmp::min(self.min_id, id);
+            Handle::pack(id, false)
+        }
     }
 
     fn create_edge(&mut self, Edge(left, right): Edge) -> bool {
