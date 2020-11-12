@@ -285,7 +285,10 @@ Graph: {
     // insert in the path created the "steps" (handle)
     graph.append_step(&p1, h1);
     graph.append_step(&p1, h2);
-    /* Obtaining
+    ```
+    Obtaining
+    ```rust
+    /* 
     Graph: {
         Nodes: {
                 1: 1
@@ -313,7 +316,10 @@ Graph: {
     let remove_id: NodeId = 12.into();
     // remove the node if exists and all its's occurrencies from the edge and path list
     graph.remove_handle(remove_id);
-    /* Obtaining
+    ```
+    Obtaining
+    ```rust
+    /* 
     Graph: {
         Nodes: {
                 13: CTTGATT
@@ -334,7 +340,10 @@ Graph: {
     let remove_edge: Edge = Edge(left, right);
     // remove the edge if exists, and all it's occurrencies from the path list
     graph.remove_edge(remove_edge);
-    /* Obtaining
+    ```
+    Obtaining
+    ```rust
+    /* 
     Graph: {
         Nodes: {
                 13: CTTGATT
@@ -354,7 +363,10 @@ Graph: {
     ```rust
     // remove a path if exists
     graph.remove_path(&BString::from(15.to_string()));
-    /* Obtaining
+    ```
+    Obtaining
+    ```rust
+    /* 
     Graph: {
         Nodes: {
                 13: CTTGATT
@@ -376,7 +388,10 @@ Graph: {
     // delete all the occurrencies in the graph and set te max and min nodes
     // values to default
     graph.clear_graph();
-    /* Obtaining
+    ```
+    Obtaining
+    ```rust
+    /* 
     Graph: {
         Nodes: {
         }
@@ -394,7 +409,10 @@ Graph: {
     // modify a node if exists, changing its sequence and leaving the nodeId the same
     // the new sequence will replace all the occurrencies of the old sequence in the path vector
     graph.modify_handle(modify_id, modify_seq);
-    /* Obtaining
+    ```
+    Obtaining
+    ```rust
+    /* 
     Graph: {
         Nodes: {
                 13: CTTGATT
@@ -421,7 +439,10 @@ Graph: {
     let mod_edge: Edge = Edge(left, right);
     // modify an edge if exists, removing all the occurrencies of the edge from the path list
     graph.modify_edge(mod_edge, new_left, new_right)
-    /* Obtaining
+    ```
+    Obtaining
+    ```rust
+    /* 
     Graph: {
         Nodes: {
                 13: CTTGATT
@@ -448,7 +469,10 @@ Graph: {
     ];
     // modify a path if exists, replace all the old occurrencies with the new ones
     graph.modify_path(b"14", path_handles);
-    /* Obtaining
+    ```
+    Obtaining
+    ```rust
+    /* 
     Graph: {
         Nodes: {
                 13: CTTGATT
