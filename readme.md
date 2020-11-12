@@ -287,8 +287,7 @@ Graph: {
     graph.append_step(&p1, h2);
     ```
     Obtaining
-    ```rust
-    /* 
+    ```
     Graph: {
         Nodes: {
                 1: 1
@@ -309,7 +308,6 @@ Graph: {
                 14: ACCTT -> CCTTGA -(TCAAGG) -> CTTGATT
         }
     }
-    */
     ```
     - REMOVE OPERATIONS:
     ```rust
@@ -318,8 +316,7 @@ Graph: {
     graph.remove_handle(remove_id);
     ```
     Obtaining
-    ```rust
-    /* 
+    ``` 
     Graph: {
         Nodes: {
                 13: CTTGATT
@@ -332,7 +329,6 @@ Graph: {
                 15: ACCTT -> CTTGATT   
         }
     }
-    */
     ```
     ```rust
     let left: Handle = Handle::new(12 as u64, Orientation::Backward);
@@ -342,8 +338,7 @@ Graph: {
     graph.remove_edge(remove_edge);
     ```
     Obtaining
-    ```rust
-    /* 
+    ```
     Graph: {
         Nodes: {
                 13: CTTGATT
@@ -358,15 +353,13 @@ Graph: {
                 15: ACCTT -> CTTGATT   
         }
     }
-    */
     ```
     ```rust
     // remove a path if exists
     graph.remove_path(&BString::from(15.to_string()));
     ```
     Obtaining
-    ```rust
-    /* 
+    ```
     Graph: {
         Nodes: {
                 13: CTTGATT
@@ -382,7 +375,6 @@ Graph: {
                 14: ACCTT -> CCTTGA -(TCAAGG) -> CTTGATT
         }
     }
-    */
     ```
     ```rust
     // delete all the occurrencies in the graph and set te max and min nodes
@@ -390,8 +382,7 @@ Graph: {
     graph.clear_graph();
     ```
     Obtaining
-    ```rust
-    /* 
+    ``` 
     Graph: {
         Nodes: {
         }
@@ -400,7 +391,6 @@ Graph: {
         Paths: {
         }
     }
-    */
     ```
     - MODIFIY OPERATIONS:
     ```rust
@@ -411,8 +401,7 @@ Graph: {
     graph.modify_handle(modify_id, modify_seq);
     ```
     Obtaining
-    ```rust
-    /* 
+    ```
     Graph: {
         Nodes: {
                 13: CTTGATT
@@ -429,7 +418,6 @@ Graph: {
                 14: ACCTT -> EGNEUQES_ASEA -(TEST_SEQUENCE) -> CTTGATT        
         }
     }
-    */
     ```
     ```rust
     let left: Handle = Handle::new(11 as u64, Orientation::Forward);
@@ -441,8 +429,7 @@ Graph: {
     graph.modify_edge(mod_edge, new_left, new_right)
     ```
     Obtaining
-    ```rust
-    /* 
+    ``` 
     Graph: {
         Nodes: {
                 13: CTTGATT
@@ -458,7 +445,6 @@ Graph: {
                 14: ACCTT -> CCTTGA -(TCAAGG) -> CTTGATT
         }
     }
-    */
     ```
     ```rust
     let path_handles: Vec<Handle> = vec![
@@ -471,8 +457,7 @@ Graph: {
     graph.modify_path(b"14", path_handles);
     ```
     Obtaining
-    ```rust
-    /* 
+    ```
     Graph: {
         Nodes: {
                 13: CTTGATT
@@ -489,5 +474,4 @@ Graph: {
                 14: ACCTT -> ACCTT -> TCAAGG -> CTTGATT
         }
     }
-    */
     ```
