@@ -305,6 +305,8 @@ impl AdditiveHandleGraph for HashGraph {
             None == left_node.right_edges.iter().find(|&&h| h == right)
         };
 
+        //println!("add_edge = {}", add_edge);
+        //println!("Edge: {} -> {}", left.id(), right.id());
         if add_edge {
             let left_node = self
                 .graph
@@ -326,10 +328,8 @@ impl AdditiveHandleGraph for HashGraph {
                     right_node.left_edges.push(left.flip());
                 }
             }
-            true
-        } else {
-            false
         }
+        true
     }
 }
 

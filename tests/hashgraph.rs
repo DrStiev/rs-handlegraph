@@ -92,13 +92,13 @@ fn construct_from_gfa2() {
 
 #[test]
 fn construct_from_medium_gfa2() {
-    use gfa2::gfa2::GFA2;
-    use gfa2::parser_gfa2::GFA2Parser;
+    use gfa2::gfa1::GFA;
+    use gfa2::parser_gfa1::GFAParser;
 
     println!("Parse file \"test.gfa2\"");
     // parsing file, about 3 seconds (WITH PROGRESSBAR)
-    let parser = GFA2Parser::new();
-    let gfa2: Option<GFA2<usize, ()>> = parser.parse_file("./tests/big_files/test.gfa2").ok();
+    let parser = GFAParser::new();
+    let gfa2: Option<GFA<usize, ()>> = parser.parse_file("./tests/big_files/test.gfa").ok();
 
     if let Some(gfa2) = gfa2 {
         // construct handlegraph, about 3 seconds (WITH PROGRESSBAR)
@@ -107,7 +107,7 @@ fn construct_from_medium_gfa2() {
         // 0 seconds for pathso -> paths
         // 0 seconds for pathsu -> paths
         println!("Create graph from GFA object");
-        let _graph = HashGraph::from_gfa2(&gfa2);
+        let _graph = HashGraph::from_gfa(&gfa2);
     //graph.print_graph();
     } else {
         panic!("Couldn't parse test GFA file!");
